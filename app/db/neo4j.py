@@ -20,3 +20,12 @@ def create_similarity_edge(id1, id2, score):
             MERGE (a)-[:SIMILAR_TO {score: $score}]->(b)
         """, id1=id1, id2=id2, score=score)
 
+def get_all_notes():
+    with driver.session() as session:
+        result = session.run(
+            "MATCH (n:Note) RETURN n.id AS id, n.title AS title"
+        )
+        return [
+            {"id": row["id"], "title": row["title"]}
+            for row in result
+        ]
