@@ -13,19 +13,15 @@ def get_all_notes_with_embeddings():
         result = session.run("MATCH (n:Note) RETURN n.id AS id, n.embedding AS embedding")
         return [{"id": row["id"], "embedding": row["embedding"]} for row in result]
 
+def get_all_notes():
+    """Nova função: retorna todas as notas com id e título"""
+    with driver.session() as session:
+        result = session.run("MATCH (n:Note) RETURN n.id AS id, n.title AS title")
+        return [{"id": row["id"], "title": row["title"]} for row in result]
+
 def create_similarity_edge(id1, id2, score):
     with driver.session() as session:
         session.run("""
             MATCH (a:Note {id: $id1}), (b:Note {id: $id2})
             MERGE (a)-[:SIMILAR_TO {score: $score}]->(b)
         """, id1=id1, id2=id2, score=score)
-
-def get_all_notes():
-    with driver.session() as session:
-        result = session.run(
-            "MATCH (n:Note) RETURN n.id AS id, n.title AS title"
-        )
-        return [
-            {"id": row["id"], "title": row["title"]}
-            for row in result
-        ]

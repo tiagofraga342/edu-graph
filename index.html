@@ -130,11 +130,18 @@
             margin-bottom: 15px;
             border-left: 4px solid #667eea;
             transition: all 0.3s ease;
+            cursor: pointer;
         }
 
         .note-item:hover {
             transform: translateX(5px);
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .note-item.selected {
+            background: #e6fffa;
+            border-left-color: #22c55e;
+            box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2);
         }
 
         .note-item h3 {
@@ -253,14 +260,25 @@
             </div>
 
             <div class="card">
-                <h2>📚 Notas Adicionadas</h2>
+                <h2>📚 Notas Cadastradas</h2>
                 <div class="notes-list" id="notesList">
                     <p style="text-align: center; color: #718096; padding: 20px;">
-                        Nenhuma nota adicionada ainda. Adicione sua primeira nota!
+                        Carregando notas...
                     </p>
                 </div>
             </div>
         </div>
+
+        <div class="main-content">
+            <div class="card">
+                <h2>🔗 Notas Similares</h2>
+                <p style="margin-bottom: 15px; color: #718096;">Clique em uma nota acima para ver suas similaridades</p>
+                <div class="notes-list" id="similarNotesList">
+                    <p style="text-align: center; color: #718096; padding: 20px;">
+                        Selecione uma nota para ver as similaridades
+                    </p>
+                </div>
+            </div>
 
         <div class="stats">
             <h3>Total de Notas</h3>
@@ -271,11 +289,13 @@
     <script>
         const API_BASE_URL = 'http://localhost:8000';
         let notes = [];
+        let selectedNoteId = null;
 
         // Elementos do DOM
         const noteForm = document.getElementById('noteForm');
         const messageDiv = document.getElementById('message');
         const notesList = document.getElementById('notesList');
+        const similarNotesList = document.getElementById('similarNotesList');
         const submitBtn = document.getElementById('submitBtn');
         const notesCount = document.getElementById('notesCount');
 
@@ -320,18 +340,10 @@
 
                 const result = await response.json();
                 
-                // Adiciona a nota à lista local
-                notes.push({
-                    id: result.id,
-                    title: result.title,
-                    text: text,
-                    timestamp: new Date().toLocaleString('pt-BR')
-                });
-
-                updateNotesList();
-                updateStats();
-                
                 showMessage(`✅ Nota "${title}" adicionada com sucesso! ID: ${result.id}`, 'success');
+                
+                // Recarrega a lista de notas da API
+                await loadNotes();
                 
                 // Limpa o formulário
                 noteForm.reset();
@@ -344,26 +356,120 @@
             }
         }
 
+        // Função para carregar todas as notas da API
+        async function loadNotes() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/notes`);
+                if (!response.ok) {
+                    throw new Error(`Erro ${response.status}: ${response.statusText}`);
+                }
+                
+                notes = await response.json();
+                updateNotesList();
+                updateStats();
+                
+            } catch (error) {
+                console.error('Erro ao carregar notas:', error);
+                notesList.innerHTML = `
+                    <p style="text-align: center; color: #e53e3e; padding: 20px;">
+                        ❌ Erro ao carregar notas: ${error.message}
+                    </p>
+                `;
+            }
+        }
+
+        // Função para carregar notas similares
+        async function loadSimilarNotes(noteId) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/notes/${noteId}/similar?top_k=5`);
+                if (!response.ok) {
+                    throw new Error(`Erro ${response.status}: ${response.statusText}`);
+                }
+                
+                const similarNotes = await response.json();
+                updateSimilarNotesList(similarNotes, noteId);
+                
+            } catch (error) {
+                console.error('Erro ao carregar notas similares:', error);
+                similarNotesList.innerHTML = `
+                    <p style="text-align: center; color: #e53e3e; padding: 20px;">
+                        ❌ Erro ao carregar similaridades: ${error.message}
+                    </p>
+                `;
+            }
+        }
         // Função para atualizar a lista de notas
         function updateNotesList() {
             if (notes.length === 0) {
                 notesList.innerHTML = `
                     <p style="text-align: center; color: #718096; padding: 20px;">
-                        Nenhuma nota adicionada ainda. Adicione sua primeira nota!
+                        Nenhuma nota cadastrada ainda. Adicione sua primeira nota!
                     </p>
                 `;
                 return;
             }
 
             const notesHTML = notes.map(note => `
-                <div class="note-item">
+                <div class="note-item ${selectedNoteId === note.id ? 'selected' : ''}" onclick="selectNote('${note.id}', '${escapeHtml(note.title)}')">
                     <h3>${escapeHtml(note.title)}</h3>
-                    <p>${escapeHtml(note.text.substring(0, 150))}${note.text.length > 150 ? '...' : ''}</p>
-                    <div class="note-id">ID: ${note.id} | Adicionada em: ${note.timestamp}</div>
+                    <div class="note-id">ID: ${note.id}</div>
                 </div>
             `).join('');
 
             notesList.innerHTML = notesHTML;
+        }
+
+        // Função para atualizar a lista de notas similares
+        function updateSimilarNotesList(similarNotes, selectedId) {
+            if (similarNotes.length === 0) {
+                similarNotesList.innerHTML = `
+                    <p style="text-align: center; color: #718096; padding: 20px;">
+                        Esta nota não possui similaridades com outras notas (score > 0.75)
+                    </p>
+                `;
+                return;
+            }
+
+            const selectedNote = notes.find(n => n.id === selectedId);
+            const similarHTML = `
+                <div style="margin-bottom: 20px; padding: 15px; background: #f0f4f8; border-radius: 8px;">
+                    <h4 style="color: #2d3748; margin-bottom: 5px;">📝 Nota Selecionada:</h4>
+                    <p style="color: #4a5568; font-weight: 600;">${escapeHtml(selectedNote.title)}</p>
+                </div>
+                <h4 style="color: #4a5568; margin-bottom: 15px;">🔗 Notas Similares:</h4>
+                ${similarNotes.map(sim => {
+                    const note = notes.find(n => n.id === sim.id);
+                    const percentage = (sim.score * 100).toFixed(1);
+                    return `
+                        <div class="note-item" style="border-left-color: ${getScoreColor(sim.score)};">
+                            <h3>${escapeHtml(note ? note.title : 'Nota não encontrada')}</h3>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
+                                <div class="note-id">ID: ${sim.id}</div>
+                                <div style="background: ${getScoreColor(sim.score)}; color: white; padding: 4px 8px; border-radius: 12px; font-size: 0.8rem; font-weight: bold;">
+                                    ${percentage}% similar
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('')}
+            `;
+
+            similarNotesList.innerHTML = similarHTML;
+        }
+
+        // Função para selecionar uma nota
+        function selectNote(noteId, noteTitle) {
+            selectedNoteId = noteId;
+            updateNotesList(); // Rerender para mostrar seleção
+            loadSimilarNotes(noteId);
+        }
+
+        // Função para determinar cor baseada no score
+        function getScoreColor(score) {
+            if (score >= 0.9) return '#22c55e'; // Verde forte
+            if (score >= 0.8) return '#3b82f6'; // Azul
+            if (score >= 0.75) return '#f59e0b'; // Amarelo/Laranja
+            return '#6b7280'; // Cinza
         }
 
         // Função para atualizar estatísticas
@@ -411,7 +517,7 @@
         // Testa conexão ao carregar a página
         document.addEventListener('DOMContentLoaded', () => {
             testConnection();
-            updateStats();
+            loadNotes(); // Carrega notas da API
         });
     </script>
 </body>
