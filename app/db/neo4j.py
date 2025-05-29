@@ -1,27 +1,33 @@
 from neo4j import GraphDatabase
+import os
 
-driver = GraphDatabase.driver("bolt://neo4j:7687", auth=("neo4j", "password"))
+NEO4J_URI      = "bolt://neo4j:7687"
+NEO4J_USER     = "neo4j"
+NEO4J_PASSWORD = "password"
 
-def create_note_node(note_id, title, embedding):
+driver = GraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD))
+
+def create_note_node(note_id: str):
     with driver.session() as session:
-        session.run("""
-            CREATE (:Note {id: $id, title: $title, embedding: $embedding})
-        """, id=note_id, title=title, embedding=embedding)
+        session.run(
+            "MERGE (n:Note {id: $id})",
+            id=note_id
+        )
 
-def get_all_notes_with_embeddings():
-    with driver.session() as session:
-        result = session.run("MATCH (n:Note) RETURN n.id AS id, n.embedding AS embedding")
-        return [{"id": row["id"], "embedding": row["embedding"]} for row in result]
 
-def get_all_notes():
-    """Nova função: retorna todas as notas com id e título"""
+def create_relationship(from_id: str, to_id: str, rel_type: str = "RELATED"):
     with driver.session() as session:
-        result = session.run("MATCH (n:Note) RETURN n.id AS id, n.title AS title")
-        return [{"id": row["id"], "title": row["title"]} for row in result]
+        session.run(
+            f"MATCH (a:Note {{id: $from_id}}), (b:Note {{id: $to_id}}) MERGE (a)-[r:{rel_type}]->(b)",
+            from_id=from_id,
+            to_id=to_id
+        )
 
-def create_similarity_edge(id1, id2, score):
+
+def get_relationships(note_id: str) -> list:
     with driver.session() as session:
-        session.run("""
-            MATCH (a:Note {id: $id1}), (b:Note {id: $id2})
-            MERGE (a)-[:SIMILAR_TO {score: $score}]->(b)
-        """, id1=id1, id2=id2, score=score)
+        result = session.run(
+            "MATCH (n:Note {id: $id})-[r]->(m:Note) RETURN type(r) AS type, m.id AS id",
+            id=note_id
+        )
+        return [{"type": row["type"], "id": row["id"]} for row in result]
