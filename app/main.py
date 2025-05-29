@@ -5,10 +5,10 @@ from typing import List
 
 from db.mongo import (
     create_note, get_note, get_all_notes,
-    update_note, delete_note
+    update_note, delete_note, notes_collection
 )
 from db.neo4j import (
-    create_note_node, create_relationship, get_relationships
+    create_note_node, create_relationship, get_relationships, driver
 )
 from services.embedding import get_embedding
 from services.similarity import cosine_similarity
@@ -48,6 +48,18 @@ def create_new_note(note: NoteCreate):
     create_note_node(new_note["id"])
     link_similar_notes(new_note["id"], embedding)
     return new_note
+
+@app.post("/notes/batch", response_model=List[NoteResponse])
+def create_notes_batch(notes: List[NoteCreate]):
+    created = []
+    for note in notes:
+        embedding = get_embedding(note.content)
+        data = {"title": note.title, "content": note.content, "embedding": embedding}
+        new = create_note(data)
+        create_note_node(new["id"])
+        link_similar_notes(new["id"], embedding)
+        created.append(new)
+    return created
 
 @app.get("/notes", response_model=List[NoteResponse])
 def list_notes():
@@ -123,3 +135,11 @@ def get_graph():
             })
 
     return {"nodes": nodes, "edges": edges}
+
+
+@app.delete("/notes")
+def delete_all_notes():
+    res = notes_collection.delete_many({})
+    with driver.session() as session:
+        session.run("MATCH (n:Note) DETACH DELETE n")
+    return {"deleted_mongo": res.deleted_count, "deleted_neo4j": "all Note nodes"}
