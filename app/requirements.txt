@@ -3,3 +3,4 @@ uvicorn
 neo4j
 sentence-transformers
 pymongo
+numpy
