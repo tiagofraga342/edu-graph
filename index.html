@@ -3,7 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Notas Conectadas</title>
+    <title>🧠 Edu-graph</title>
+    <!-- CSS do vis-network -->
+    <link
+    href="https://unpkg.com/vis-network@9.0.4/dist/vis-network.min.css"
+    rel="stylesheet"
+    />
+    <!-- JS do vis-network -->
+    <script src="https://unpkg.com/vis-network@9.0.4/dist/vis-network.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -236,34 +243,34 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🧠 Sistema de Notas Conectadas</h1>
-            <p>Adicione notas e descubra conexões automáticas baseadas em similaridade semântica</p>
+            <h1>🧠 Edu-graph</h1>
+            <p>Adicione anotações e descubra conexões automáticas baseadas em similaridade semântica</p>
         </div>
 
         <div class="main-content">
             <div class="card">
-                <h2>📝 Adicionar Nova Nota</h2>
+                <h2>📝 Adicionar Nova Anotação</h2>
                 <div id="message"></div>
                 <form id="noteForm">
                     <div class="form-group">
-                        <label for="title">Título da Nota</label>
+                        <label for="title">Título da Anotação</label>
                         <input type="text" id="title" name="title" required placeholder="Digite o título da sua nota...">
                     </div>
                     <div class="form-group">
-                        <label for="text">Conteúdo da Nota</label>
+                        <label for="text">Conteúdo da Anotação</label>
                         <textarea id="text" name="text" required placeholder="Escreva o conteúdo da sua nota aqui..."></textarea>
                     </div>
                     <button type="submit" class="btn" id="submitBtn">
-                        Adicionar Nota
+                        Adicionar Anotação
                     </button>
                 </form>
             </div>
 
             <div class="card">
-                <h2>📚 Notas Cadastradas</h2>
+                <h2>📚 Anotações Cadastradas</h2>
                 <div class="notes-list" id="notesList">
                     <p style="text-align: center; color: #718096; padding: 20px;">
-                        Carregando notas...
+                        Carregando anotações...
                     </p>
                 </div>
             </div>
@@ -271,20 +278,22 @@
 
         <div class="main-content">
             <div class="card">
-                <h2>🔗 Notas Similares</h2>
-                <p style="margin-bottom: 15px; color: #718096;">Clique em uma nota acima para ver suas similaridades</p>
+                <h2>🔗 Anotações Similares</h2>
+                <p style="margin-bottom: 15px; color: #718096;">Clique em uma anotação acima para ver suas similaridades</p>
                 <div class="notes-list" id="similarNotesList">
                     <p style="text-align: center; color: #718096; padding: 20px;">
-                        Selecione uma nota para ver as similaridades
+                        Selecione uma anotação para ver as similaridades
                     </p>
                 </div>
             </div>
 
         <div class="stats">
-            <h3>Total de Notas</h3>
+            <h3>Total de Anotações</h3>
             <div class="stats-number" id="notesCount">0</div>
         </div>
     </div>
+
+    <div id="graph-container" style="width: 100%; height: 500px; border: 1px solid #ccc; margin-top: 20px;"></div>
 
     <script>
         const API_BASE_URL = 'http://localhost:8000';
@@ -342,9 +351,12 @@
                 
                 showMessage(`✅ Nota "${title}" adicionada com sucesso! ID: ${result.id}`, 'success');
                 
-                // Recarrega a lista de notas da API
-                await loadNotes();
-                
+                document.querySelector('#title').value = ''
+                document.querySelector('#text').value  = ''
+
+                await loadNotes()
+                await loadGraph()
+
                 // Limpa o formulário
                 noteForm.reset();
                 
@@ -514,11 +526,31 @@
             }
         }
 
-        // Testa conexão ao carregar a página
-        document.addEventListener('DOMContentLoaded', () => {
-            testConnection();
-            loadNotes(); // Carrega notas da API
-        });
+        async function loadGraph() {
+            const res = await fetch(`${API_BASE_URL}/graph`);
+            if (!res.ok) return console.error("Falha ao carregar grafo");
+            const { nodes, edges } = await res.json();
+
+            const container = document.getElementById("graph-container");
+            const data = { nodes: new vis.DataSet(nodes), edges: new vis.DataSet(edges) };
+            const options = {
+                layout: { improvedLayout: true },
+                physics: { stabilization: false },
+                nodes: { shape: "dot", size: 16, font: { size: 14 } },
+                edges: { arrows: { to: { enabled: true, scaleFactor: 0.5 } } }
+            };
+            new vis.Network(container, data, options);
+        }
+
+        // Chama no carregamento da página e após adicionar nota/link
+        window.addEventListener("load", loadGraph);
+
+
+        window.addEventListener('load', () => {
+            testConnection()
+            loadNotes()
+            loadGraph()
+        })
     </script>
 </body>
 </html>

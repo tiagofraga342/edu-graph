@@ -12,6 +12,7 @@ from db.neo4j import (
 )
 from services.embedding import get_embedding
 from services.similarity import cosine_similarity
+from services.linking import link_similar_notes
 
 app = FastAPI()
 
@@ -45,6 +46,7 @@ def create_new_note(note: NoteCreate):
     data = {"title": note.title, "content": note.content, "embedding": embedding}
     new_note = create_note(data)
     create_note_node(new_note["id"])
+    link_similar_notes(new_note["id"], embedding)
     return new_note
 
 @app.get("/notes", response_model=List[NoteResponse])
@@ -103,3 +105,21 @@ def list_relationships(note_id: str):
     if not get_note(note_id):
         raise HTTPException(status_code=404, detail="Nota não encontrada")
     return get_relationships(note_id)
+
+@app.get("/graph")
+def get_graph():
+    # 1) Busca todas as notas no Mongo
+    notes = get_all_notes()  
+    nodes = [{"id": n["id"], "label": n["title"]} for n in notes]
+
+    # 2) Para cada nota, busca relacionamentos no Neo4j
+    edges = []
+    for note in notes:
+        rels = get_relationships(note["id"])
+        for r in rels:
+            edges.append({
+                "from": note["id"],
+                "to": r["id"],
+            })
+
+    return {"nodes": nodes, "edges": edges}
