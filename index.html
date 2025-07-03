@@ -938,6 +938,697 @@
             margin-bottom: 12px;
         }
 
+        /* Relationship Management Styles */
+        .relationship-management-section {
+            background: var(--notion-bg);
+            border: 1px solid var(--notion-border);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .relationship-management-section h3 {
+            margin: 0 0 16px 0;
+            color: var(--notion-text);
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .relationship-management-controls {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 16px;
+            align-items: end;
+            margin-bottom: 16px;
+        }
+
+        .manage-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .manage-input-group label {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--notion-text);
+        }
+
+        .manage-search {
+            padding: 8px 12px;
+            border: 1px solid var(--notion-border);
+            border-radius: 4px;
+            background: var(--notion-bg);
+            color: var(--notion-text);
+            font-size: 14px;
+            transition: border-color 0.2s ease;
+        }
+
+        .manage-search:focus {
+            outline: none;
+            border-color: var(--notion-blue);
+            box-shadow: 0 0 0 2px rgba(35, 131, 226, 0.1);
+        }
+
+        .relationships-list {
+            background: var(--notion-hover);
+            border-radius: 6px;
+            padding: 16px;
+            display: none;
+        }
+
+        .relationships-list.show {
+            display: block;
+        }
+
+        .relationship-item {
+            background: var(--notion-bg);
+            border: 1px solid var(--notion-border);
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .relationship-info {
+            flex: 1;
+        }
+
+        .relationship-title {
+            font-weight: 500;
+            color: var(--notion-text);
+            margin-bottom: 4px;
+        }
+
+        .relationship-type {
+            font-size: 12px;
+            color: var(--notion-text-light);
+            background: var(--notion-hover);
+            padding: 2px 6px;
+            border-radius: 3px;
+            display: inline-block;
+        }
+
+        .relationship-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-small {
+            padding: 4px 8px;
+            font-size: 12px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .dropdown-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            border-bottom: 1px solid var(--notion-border);
+            transition: background-color 0.2s ease;
+        }
+
+        .dropdown-item:hover {
+            background: var(--notion-hover);
+        }
+
+        .dropdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .dropdown-item-title {
+            font-weight: 500;
+            color: var(--notion-text);
+            margin-bottom: 2px;
+        }
+
+        .dropdown-item-preview {
+            font-size: 12px;
+            color: var(--notion-text-light);
+            line-height: 1.3;
+        }
+
+        .loading {
+            text-align: center;
+            color: var(--notion-text-light);
+            font-style: italic;
+            padding: 20px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty-state-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--notion-text);
+            margin-bottom: 8px;
+        }
+
+        .empty-state-text {
+            color: var(--notion-text-light);
+            font-size: 14px;
+        }
+
+        /* Graph Interaction Controls */
+        .graph-controls {
+            background: var(--notion-bg);
+            border: 1px solid var(--notion-border);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .graph-mode-section h4 {
+            margin: 0 0 12px 0;
+            color: var(--notion-text);
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .graph-mode-buttons {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .graph-mode-buttons .btn {
+            padding: 8px 16px;
+            font-size: 14px;
+            border-radius: 6px;
+            border: 1px solid var(--notion-border);
+            background: var(--notion-bg);
+            color: var(--notion-text);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .graph-mode-buttons .btn:hover {
+            background: var(--notion-hover);
+        }
+
+        .graph-mode-buttons .btn.active {
+            background: var(--notion-blue);
+            color: white;
+            border-color: var(--notion-blue);
+        }
+
+        .link-mode-instructions {
+            background: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 16px;
+        }
+
+        .instructions-content {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .instructions-icon {
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .instructions-text {
+            font-size: 14px;
+            color: #1a73d1;
+            line-height: 1.4;
+        }
+
+        .selected-nodes-info {
+            background: var(--notion-hover);
+            border-radius: 6px;
+            padding: 12px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .selected-node-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .node-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--notion-text-light);
+            text-transform: uppercase;
+        }
+
+        .node-title {
+            font-size: 14px;
+            color: var(--notion-text);
+            font-weight: 500;
+            padding: 4px 8px;
+            background: var(--notion-bg);
+            border-radius: 4px;
+            border: 1px solid var(--notion-border);
+        }
+
+        .node-title.selected {
+            background: #e7f3ff;
+            border-color: var(--notion-blue);
+            color: var(--notion-blue);
+        }
+
+        /* Relationship Dialog Styles */
+        .relationship-dialog-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .relationship-dialog {
+            background: var(--notion-bg);
+            border-radius: 8px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow: hidden;
+        }
+
+        .dialog-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid var(--notion-border);
+        }
+
+        .dialog-header h3 {
+            margin: 0;
+            color: var(--notion-text);
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .dialog-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: var(--notion-text-light);
+            cursor: pointer;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            transition: background-color 0.2s ease;
+        }
+
+        .dialog-close:hover {
+            background: var(--notion-hover);
+        }
+
+        .dialog-content {
+            padding: 20px;
+        }
+
+        .relationship-preview {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+            padding: 16px;
+            background: var(--notion-hover);
+            border-radius: 6px;
+        }
+
+        .node-preview {
+            flex: 1;
+            text-align: center;
+        }
+
+        .node-preview .node-label {
+            display: block;
+            font-size: 12px;
+            color: var(--notion-text-light);
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+
+        .node-preview .node-name {
+            display: block;
+            font-size: 14px;
+            color: var(--notion-text);
+            font-weight: 500;
+            padding: 8px 12px;
+            background: var(--notion-bg);
+            border-radius: 4px;
+            border: 1px solid var(--notion-border);
+        }
+
+        .arrow {
+            font-size: 20px;
+            color: var(--notion-blue);
+            font-weight: bold;
+        }
+
+        .relationship-form {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .relationship-form label {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--notion-text);
+        }
+
+        .dialog-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            padding: 20px;
+            border-top: 1px solid var(--notion-border);
+        }
+
+        .dialog-actions .btn {
+            padding: 8px 16px;
+            font-size: 14px;
+            border-radius: 6px;
+            border: 1px solid var(--notion-border);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .dialog-actions .btn-secondary {
+            background: var(--notion-bg);
+            color: var(--notion-text);
+        }
+
+        .dialog-actions .btn-secondary:hover {
+            background: var(--notion-hover);
+        }
+
+        .dialog-actions .btn-primary {
+            background: var(--notion-blue);
+            color: white;
+            border-color: var(--notion-blue);
+        }
+
+        .dialog-actions .btn-primary:hover {
+            background: #1a73d1;
+        }
+
+        /* Semantic Search Styles */
+        .semantic-search-section {
+            background: var(--notion-bg);
+            border: 1px solid var(--notion-border);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .semantic-search-section h3 {
+            margin: 0 0 8px 0;
+            color: var(--notion-text);
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .search-description {
+            margin: 0 0 16px 0;
+            color: var(--notion-text-light);
+            font-size: 14px;
+            font-style: italic;
+        }
+
+        .semantic-search-controls {
+            margin-bottom: 20px;
+        }
+
+        .search-input-container {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .semantic-search-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid var(--notion-border);
+            border-radius: 6px;
+            background: var(--notion-bg);
+            color: var(--notion-text);
+            font-size: 14px;
+            transition: border-color 0.2s ease;
+        }
+
+        .semantic-search-input:focus {
+            outline: none;
+            border-color: var(--notion-blue);
+            box-shadow: 0 0 0 2px rgba(35, 131, 226, 0.1);
+        }
+
+        .semantic-search-input::placeholder {
+            color: var(--notion-text-light);
+            font-style: italic;
+        }
+
+        .search-options {
+            display: flex;
+            gap: 24px;
+            align-items: center;
+        }
+
+        .search-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .search-option label {
+            font-size: 14px;
+            color: var(--notion-text);
+            white-space: nowrap;
+        }
+
+        .search-select {
+            padding: 6px 10px;
+            border: 1px solid var(--notion-border);
+            border-radius: 4px;
+            background: var(--notion-bg);
+            color: var(--notion-text);
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .search-select:focus {
+            outline: none;
+            border-color: var(--notion-blue);
+        }
+
+        .semantic-search-results {
+            display: none;
+        }
+
+        .semantic-search-results.show {
+            display: block;
+        }
+
+        .search-results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--notion-border);
+        }
+
+        .search-results-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--notion-text);
+        }
+
+        .search-results-meta {
+            font-size: 12px;
+            color: var(--notion-text-light);
+        }
+
+        .search-result-item {
+            background: var(--notion-hover);
+            border: 1px solid var(--notion-border);
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .search-result-item:hover {
+            background: var(--notion-bg);
+            border-color: var(--notion-blue);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .search-result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+
+        .search-result-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--notion-text);
+            margin: 0;
+        }
+
+        .similarity-badge {
+            background: var(--notion-blue);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .similarity-badge.high {
+            background: #10b981;
+        }
+
+        .similarity-badge.medium {
+            background: #f59e0b;
+        }
+
+        .similarity-badge.low {
+            background: #6b7280;
+        }
+
+        .search-result-snippet {
+            color: var(--notion-text-light);
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 8px;
+        }
+
+        .search-result-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .btn-small {
+            padding: 4px 12px;
+            font-size: 12px;
+            border-radius: 4px;
+            border: 1px solid var(--notion-border);
+            background: var(--notion-bg);
+            color: var(--notion-text);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-small:hover {
+            background: var(--notion-hover);
+        }
+
+        .btn-small.primary {
+            background: var(--notion-blue);
+            color: white;
+            border-color: var(--notion-blue);
+        }
+
+        .btn-small.primary:hover {
+            background: #1a73d1;
+        }
+
+        .search-loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--notion-text-light);
+        }
+
+        .search-empty {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .search-empty-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .search-empty-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--notion-text);
+            margin-bottom: 8px;
+        }
+
+        .search-empty-text {
+            color: var(--notion-text-light);
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .search-input-container {
+                flex-direction: column;
+            }
+
+            .search-options {
+                flex-direction: column;
+                gap: 12px;
+                align-items: flex-start;
+            }
+
+            .search-result-header {
+                flex-direction: column;
+                gap: 8px;
+                align-items: flex-start;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .relationship-management-controls {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+        }
+
         .path-result-item:last-child {
             margin-bottom: 0;
         }
@@ -1497,7 +2188,44 @@
                 
                 <div class="page-content">
                     <div id="message"></div>
-                    
+
+                    <!-- Semantic Search Section -->
+                    <div class="semantic-search-section">
+                        <h3>🔍 Busca Semântica</h3>
+                        <p class="search-description">Encontre anotações por significado, não apenas palavras-chave</p>
+                        <div class="semantic-search-controls">
+                            <div class="search-input-container">
+                                <input type="text" id="semanticSearchInput" class="semantic-search-input"
+                                       placeholder="Ex: algoritmos de ordenação, aprendizado de máquina, estruturas de dados..."
+                                       autocomplete="off">
+                                <button id="semanticSearchBtn" class="btn btn-primary" onclick="performSemanticSearch()">
+                                    🔍 Buscar
+                                </button>
+                            </div>
+                            <div class="search-options">
+                                <div class="search-option">
+                                    <label for="maxResults">Máximo de resultados:</label>
+                                    <select id="maxResults" class="search-select">
+                                        <option value="5">5</option>
+                                        <option value="10" selected>10</option>
+                                        <option value="15">15</option>
+                                        <option value="20">20</option>
+                                    </select>
+                                </div>
+                                <div class="search-option">
+                                    <label for="minSimilarity">Similaridade mínima:</label>
+                                    <select id="minSimilarity" class="search-select">
+                                        <option value="0.2">20%</option>
+                                        <option value="0.3" selected>30%</option>
+                                        <option value="0.4">40%</option>
+                                        <option value="0.5">50%</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="semanticSearchResults" class="semantic-search-results"></div>
+                    </div>
+
                     <div class="notes-section">
                         <div class="section-header">
                             <h2 class="section-title">Suas Anotações</h2>
@@ -1571,6 +2299,65 @@
                             </div>
                         </div>
                         <div id="pathResults" class="path-results"></div>
+                    </div>
+
+
+
+                    <!-- Relationship Management Section -->
+                    <div class="relationship-management-section">
+                        <h3>📋 Gerenciar Relacionamentos</h3>
+                        <div class="relationship-management-controls">
+                            <div class="manage-input-group">
+                                <label for="manageNoteSearch">Selecionar Anotação:</label>
+                                <div class="search-select-container">
+                                    <input type="text" id="manageNoteSearch" class="manage-search" placeholder="Digite para buscar..." autocomplete="off">
+                                    <div id="manageNoteDropdown" class="search-dropdown" style="display: none;"></div>
+                                    <input type="hidden" id="manageNoteId" value="">
+                                </div>
+                            </div>
+                            <button class="btn btn-secondary" onclick="loadNoteRelationships()" id="loadRelationshipsBtn" disabled>
+                                📋 Carregar Relacionamentos
+                            </button>
+                        </div>
+                        <div id="relationshipsList" class="relationships-list"></div>
+                    </div>
+
+                    <!-- Graph Interaction Controls -->
+                    <div class="graph-controls">
+                        <div class="graph-mode-section">
+                            <h4>🎮 Modo de Interação</h4>
+                            <div class="graph-mode-buttons">
+                                <button id="viewModeBtn" class="btn btn-secondary active" onclick="setGraphMode('view')">
+                                    👁️ Visualizar
+                                </button>
+                                <button id="linkModeBtn" class="btn btn-secondary" onclick="setGraphMode('link')">
+                                    🔗 Criar Relacionamento
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="linkModeInstructions" class="link-mode-instructions" style="display: none;">
+                            <div class="instructions-content">
+                                <span class="instructions-icon">💡</span>
+                                <div class="instructions-text">
+                                    <strong>Modo Criar Relacionamento:</strong>
+                                    <br>1. Clique no primeiro nó (origem)
+                                    <br>2. Clique no segundo nó (destino)
+                                    <br>3. Escolha o tipo de relacionamento
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="selectedNodesInfo" class="selected-nodes-info" style="display: none;">
+                            <div class="selected-node-item">
+                                <span class="node-label">Origem:</span>
+                                <span id="selectedSourceNode" class="node-title">-</span>
+                            </div>
+                            <div class="selected-node-item">
+                                <span class="node-label">Destino:</span>
+                                <span id="selectedTargetNode" class="node-title">-</span>
+                            </div>
+                        </div>
                     </div>
 
                     <div id="graph-container" style="width: 100%; height: 600px; border: 1px solid var(--notion-border); border-radius: 6px; margin-top: 24px;"></div>
@@ -1916,6 +2703,9 @@
             if (page === 'graph') {
                 loadGraph();
                 populateNoteSelects();
+                setupLinkingSearches();
+                // Initialize graph mode to view
+                setGraphMode('view');
             } else if (page === 'settings') {
                 loadSettings();
             }
@@ -2239,8 +3029,14 @@
                     }
                 };
                 
-                new vis.Network(container, data, options);
-                
+                const network = new vis.Network(container, data, options);
+
+                // Store network instance globally for interaction
+                window.graphNetwork = network;
+
+                // Setup interactive relationship creation
+                setupGraphInteraction(network, data);
+
             } catch (error) {
                 console.error('Erro ao carregar grafo:', error);
                 document.getElementById("graph-container").innerHTML = `
@@ -3624,6 +4420,616 @@
             console.log('Highlighting path in graph:', nodeIds);
         }
 
+        // Interactive Graph Relationship Creation
+        let graphMode = 'view'; // 'view' or 'link'
+        let selectedNodes = { source: null, target: null };
+        let graphNetwork = null;
+
+        function setGraphMode(mode) {
+            graphMode = mode;
+
+            // Update button states
+            document.getElementById('viewModeBtn').classList.toggle('active', mode === 'view');
+            document.getElementById('linkModeBtn').classList.toggle('active', mode === 'link');
+
+            // Show/hide instructions
+            const instructions = document.getElementById('linkModeInstructions');
+            const selectedInfo = document.getElementById('selectedNodesInfo');
+
+            if (mode === 'link') {
+                instructions.style.display = 'block';
+                selectedInfo.style.display = 'block';
+            } else {
+                instructions.style.display = 'none';
+                selectedInfo.style.display = 'none';
+                clearSelectedNodes();
+            }
+
+            // Update graph interaction
+            if (graphNetwork) {
+                updateGraphInteraction();
+            }
+        }
+
+        function setupGraphInteraction(network, data) {
+            graphNetwork = network;
+
+            // Handle node clicks
+            network.on('click', function(params) {
+                if (graphMode === 'link' && params.nodes.length > 0) {
+                    handleNodeSelection(params.nodes[0], data);
+                }
+            });
+
+            // Handle node hover for visual feedback
+            network.on('hoverNode', function(params) {
+                if (graphMode === 'link') {
+                    network.canvas.body.container.style.cursor = 'pointer';
+                }
+            });
+
+            network.on('blurNode', function(params) {
+                network.canvas.body.container.style.cursor = 'default';
+            });
+        }
+
+        function handleNodeSelection(nodeId, data) {
+            const nodeData = data.nodes.get(nodeId);
+            if (!nodeData) return;
+
+            if (!selectedNodes.source) {
+                // Select source node
+                selectedNodes.source = { id: nodeId, title: nodeData.label };
+                updateSelectedNodesDisplay();
+                highlightSelectedNode(nodeId, 'source');
+            } else if (!selectedNodes.target && nodeId !== selectedNodes.source.id) {
+                // Select target node
+                selectedNodes.target = { id: nodeId, title: nodeData.label };
+                updateSelectedNodesDisplay();
+                highlightSelectedNode(nodeId, 'target');
+
+                // Show relationship creation dialog
+                showRelationshipDialog();
+            } else if (nodeId === selectedNodes.source.id) {
+                // Deselect source node
+                clearSelectedNodes();
+            } else {
+                // Replace selection if clicking on different nodes
+                clearSelectedNodes();
+                selectedNodes.source = { id: nodeId, title: nodeData.label };
+                updateSelectedNodesDisplay();
+                highlightSelectedNode(nodeId, 'source');
+            }
+        }
+
+        function updateSelectedNodesDisplay() {
+            const sourceElement = document.getElementById('selectedSourceNode');
+            const targetElement = document.getElementById('selectedTargetNode');
+
+            sourceElement.textContent = selectedNodes.source ? selectedNodes.source.title : '-';
+            sourceElement.className = selectedNodes.source ? 'node-title selected' : 'node-title';
+
+            targetElement.textContent = selectedNodes.target ? selectedNodes.target.title : '-';
+            targetElement.className = selectedNodes.target ? 'node-title selected' : 'node-title';
+        }
+
+        function highlightSelectedNode(nodeId, type) {
+            if (!graphNetwork) return;
+
+            // Update node appearance to show selection
+            const updateData = {
+                id: nodeId,
+                color: {
+                    background: type === 'source' ? '#e7f3ff' : '#f0f9ff',
+                    border: type === 'source' ? '#2383e2' : '#0ea5e9',
+                    highlight: { background: '#e7f3ff', border: '#1a73d1' }
+                },
+                borderWidth: 3
+            };
+
+            graphNetwork.updateCluster = false;
+            const nodes = graphNetwork.body.data.nodes;
+            nodes.update(updateData);
+        }
+
+        function clearSelectedNodes() {
+            selectedNodes = { source: null, target: null };
+            updateSelectedNodesDisplay();
+
+            // Reset all node appearances
+            if (graphNetwork) {
+                const nodes = graphNetwork.body.data.nodes;
+                const allNodes = nodes.get();
+
+                allNodes.forEach(node => {
+                    nodes.update({
+                        id: node.id,
+                        color: {
+                            background: '#ffffff',
+                            border: '#2383e2',
+                            highlight: { background: '#e7f3ff', border: '#1a73d1' }
+                        },
+                        borderWidth: 1
+                    });
+                });
+            }
+        }
+
+        function updateGraphInteraction() {
+            if (!graphNetwork) return;
+
+            if (graphMode === 'view') {
+                // Enable default interactions
+                graphNetwork.setOptions({
+                    interaction: {
+                        hover: true,
+                        selectConnectedEdges: false,
+                        dragNodes: true,
+                        dragView: true,
+                        zoomView: true
+                    }
+                });
+            } else {
+                // Optimize for node selection
+                graphNetwork.setOptions({
+                    interaction: {
+                        hover: true,
+                        selectConnectedEdges: false,
+                        dragNodes: false,
+                        dragView: true,
+                        zoomView: true
+                    }
+                });
+            }
+        }
+
+        async function showRelationshipDialog() {
+            if (!selectedNodes.source || !selectedNodes.target) return;
+
+            const relationshipTypes = [
+                { value: 'RELATED', label: 'Relacionado' },
+                { value: 'SIMILAR', label: 'Similar' },
+                { value: 'PREREQUISITE', label: 'Pré-requisito' },
+                { value: 'FOLLOWS', label: 'Segue' },
+                { value: 'CONTAINS', label: 'Contém' },
+                { value: 'CONTAINED_BY', label: 'Contido em' },
+                { value: 'REFERENCES', label: 'Referencia' },
+                { value: 'CONTRADICTS', label: 'Contradiz' },
+                { value: 'SUPPORTS', label: 'Suporta' },
+                { value: 'EXTENDS', label: 'Estende' }
+            ];
+
+            const options = relationshipTypes.map(type =>
+                `<option value="${type.value}">${type.label}</option>`
+            ).join('');
+
+            const dialogHtml = `
+                <div class="relationship-dialog-overlay" id="relationshipDialog">
+                    <div class="relationship-dialog">
+                        <div class="dialog-header">
+                            <h3>🔗 Criar Relacionamento</h3>
+                            <button class="dialog-close" onclick="closeRelationshipDialog()">×</button>
+                        </div>
+                        <div class="dialog-content">
+                            <div class="relationship-preview">
+                                <div class="node-preview source">
+                                    <span class="node-label">Origem:</span>
+                                    <span class="node-name">${selectedNodes.source.title}</span>
+                                </div>
+                                <div class="arrow">→</div>
+                                <div class="node-preview target">
+                                    <span class="node-label">Destino:</span>
+                                    <span class="node-name">${selectedNodes.target.title}</span>
+                                </div>
+                            </div>
+                            <div class="relationship-form">
+                                <label for="dialogRelationshipType">Tipo de Relacionamento:</label>
+                                <select id="dialogRelationshipType" class="relationship-select">
+                                    ${options}
+                                </select>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="dialogBidirectional" checked>
+                                    <span class="checkmark"></span>
+                                    Relacionamento bidirecional
+                                </label>
+                            </div>
+                        </div>
+                        <div class="dialog-actions">
+                            <button class="btn btn-secondary" onclick="closeRelationshipDialog()">Cancelar</button>
+                            <button class="btn btn-primary" onclick="createGraphRelationship()">Criar Relacionamento</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.body.insertAdjacentHTML('beforeend', dialogHtml);
+        }
+
+        function closeRelationshipDialog() {
+            const dialog = document.getElementById('relationshipDialog');
+            if (dialog) {
+                dialog.remove();
+            }
+            clearSelectedNodes();
+        }
+
+        async function createGraphRelationship() {
+            if (!selectedNodes.source || !selectedNodes.target) return;
+
+            const relationshipType = document.getElementById('dialogRelationshipType').value;
+            const bidirectional = document.getElementById('dialogBidirectional').checked;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/notes/${selectedNodes.source.id}/link`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        target_note_id: selectedNodes.target.id,
+                        relationship_type: relationshipType,
+                        bidirectional: bidirectional
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || `Erro ${response.status}`);
+                }
+
+                const result = await response.json();
+
+                showMessage('🔗 Relacionamento criado com sucesso!', 'success');
+
+                // Close dialog and clear selection
+                closeRelationshipDialog();
+
+                // Reload graph to show new relationship
+                loadGraph();
+
+                // Switch back to view mode
+                setGraphMode('view');
+
+            } catch (error) {
+                console.error('Erro ao criar relacionamento:', error);
+                showMessage(`❌ Erro ao criar relacionamento: ${error.message}`, 'error');
+            }
+        }
+
+        // Semantic Search Functions
+        async function performSemanticSearch() {
+            const query = document.getElementById('semanticSearchInput').value.trim();
+            const maxResults = parseInt(document.getElementById('maxResults').value);
+            const minSimilarity = parseFloat(document.getElementById('minSimilarity').value);
+
+            if (!query) {
+                showMessage('❌ Digite uma consulta para buscar', 'error');
+                return;
+            }
+
+            const resultsContainer = document.getElementById('semanticSearchResults');
+            resultsContainer.innerHTML = `
+                <div class="search-loading">
+                    <div class="loading-spinner">🔍</div>
+                    <p>Buscando anotações semanticamente relacionadas...</p>
+                </div>
+            `;
+            resultsContainer.classList.add('show');
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/search/semantic`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        query: query,
+                        max_results: maxResults,
+                        min_similarity: minSimilarity
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || `Erro ${response.status}`);
+                }
+
+                const searchResults = await response.json();
+                displaySemanticSearchResults(searchResults);
+
+            } catch (error) {
+                console.error('Erro na busca semântica:', error);
+                resultsContainer.innerHTML = `
+                    <div class="search-empty">
+                        <div class="search-empty-icon">⚠️</div>
+                        <div class="search-empty-title">Erro na busca</div>
+                        <div class="search-empty-text">${error.message}</div>
+                    </div>
+                `;
+            }
+        }
+
+        function displaySemanticSearchResults(searchResults) {
+            const resultsContainer = document.getElementById('semanticSearchResults');
+
+            if (searchResults.results.length === 0) {
+                resultsContainer.innerHTML = `
+                    <div class="search-empty">
+                        <div class="search-empty-icon">🔍</div>
+                        <div class="search-empty-title">Nenhum resultado encontrado</div>
+                        <div class="search-empty-text">Tente ajustar os termos de busca ou diminuir a similaridade mínima</div>
+                    </div>
+                `;
+                return;
+            }
+
+            const resultsHtml = `
+                <div class="search-results-header">
+                    <div class="search-results-title">
+                        📊 ${searchResults.results.length} resultado(s) encontrado(s)
+                    </div>
+                    <div class="search-results-meta">
+                        Busca: "${searchResults.query}" • ${searchResults.search_time_ms}ms
+                    </div>
+                </div>
+                <div class="search-results-list">
+                    ${searchResults.results.map(result => createSearchResultItem(result)).join('')}
+                </div>
+            `;
+
+            resultsContainer.innerHTML = resultsHtml;
+        }
+
+        function createSearchResultItem(result) {
+            const similarityPercent = Math.round(result.similarity_score * 100);
+            const similarityClass = getSimilarityClass(result.similarity_score);
+
+            return `
+                <div class="search-result-item" onclick="openNoteFromSearch('${result.id}')">
+                    <div class="search-result-header">
+                        <h4 class="search-result-title">${escapeHtml(result.title)}</h4>
+                        <span class="similarity-badge ${similarityClass}">${similarityPercent}%</span>
+                    </div>
+                    <div class="search-result-snippet">
+                        ${escapeHtml(result.snippet)}
+                    </div>
+                    <div class="search-result-actions">
+                        <button class="btn-small primary" onclick="event.stopPropagation(); openNoteFromSearch('${result.id}')">
+                            📖 Abrir
+                        </button>
+                        <button class="btn-small" onclick="event.stopPropagation(); findSimilarToResult('${result.id}')">
+                            🔗 Similares
+                        </button>
+                        <button class="btn-small" onclick="event.stopPropagation(); selectNoteInList('${result.id}')">
+                            📍 Localizar
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function getSimilarityClass(score) {
+            if (score >= 0.7) return 'high';
+            if (score >= 0.5) return 'medium';
+            return 'low';
+        }
+
+        function openNoteFromSearch(noteId) {
+            // Find the note and open it for editing
+            const note = notes.find(n => n.id === noteId);
+            if (note) {
+                editNote(noteId);
+            }
+        }
+
+        function findSimilarToResult(noteId) {
+            // Select the note and load its similar notes
+            selectNote(noteId);
+            loadSimilarNotes(noteId);
+        }
+
+        function selectNoteInList(noteId) {
+            // Scroll to and highlight the note in the main list
+            selectNote(noteId);
+
+            // Scroll to the note card
+            const noteCard = document.querySelector(`[data-note-id="${noteId}"]`);
+            if (noteCard) {
+                noteCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                // Briefly highlight the card
+                noteCard.style.background = '#e7f3ff';
+                noteCard.style.borderColor = '#2383e2';
+                setTimeout(() => {
+                    noteCard.style.background = '';
+                    noteCard.style.borderColor = '';
+                }, 2000);
+            }
+        }
+
+        // Add Enter key support for search input
+        function setupSemanticSearch() {
+            const searchInput = document.getElementById('semanticSearchInput');
+            if (searchInput) {
+                searchInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        performSemanticSearch();
+                    }
+                });
+            }
+        }
+
+        // Relationship Management Functions
+        function setupLinkingSearches() {
+            // Setup search functionality for relationship management
+            setupSearchDropdown('manageNoteSearch', 'manageNoteDropdown', 'manageNoteId', 'loadRelationshipsBtn');
+        }
+
+        function setupSearchDropdown(searchInputId, dropdownId, hiddenInputId, buttonId) {
+            const searchInput = document.getElementById(searchInputId);
+            const dropdown = document.getElementById(dropdownId);
+            const hiddenInput = document.getElementById(hiddenInputId);
+            const button = document.getElementById(buttonId);
+
+            if (!searchInput || !dropdown || !hiddenInput) return;
+
+            searchInput.addEventListener('input', function() {
+                const query = this.value.toLowerCase();
+                if (query.length < 2) {
+                    dropdown.style.display = 'none';
+                    hiddenInput.value = '';
+                    updateButtonState();
+                    return;
+                }
+
+                const filteredNotes = notes.filter(note =>
+                    note.title.toLowerCase().includes(query) ||
+                    note.content.toLowerCase().includes(query)
+                );
+
+                if (filteredNotes.length === 0) {
+                    dropdown.style.display = 'none';
+                    return;
+                }
+
+                const dropdownHtml = filteredNotes.slice(0, 10).map(note => `
+                    <div class="dropdown-item" onclick="selectNoteForLinking('${note.id}', '${escapeHtml(note.title)}', '${searchInputId}', '${hiddenInputId}', '${dropdownId}')">
+                        <div class="dropdown-item-title">${escapeHtml(note.title)}</div>
+                        <div class="dropdown-item-preview">${escapeHtml(note.content.substring(0, 100))}...</div>
+                    </div>
+                `).join('');
+
+                dropdown.innerHTML = dropdownHtml;
+                dropdown.style.display = 'block';
+            });
+
+            searchInput.addEventListener('blur', function() {
+                // Delay hiding to allow click on dropdown items
+                setTimeout(() => {
+                    dropdown.style.display = 'none';
+                }, 200);
+            });
+
+            function updateButtonState() {
+                if (button && buttonId === 'loadRelationshipsBtn') {
+                    button.disabled = !hiddenInput.value;
+                }
+            }
+
+            // Update button state when hidden input changes
+            hiddenInput.addEventListener('change', updateButtonState);
+        }
+
+        function selectNoteForLinking(noteId, noteTitle, searchInputId, hiddenInputId, dropdownId) {
+            document.getElementById(searchInputId).value = noteTitle;
+            document.getElementById(hiddenInputId).value = noteId;
+            document.getElementById(dropdownId).style.display = 'none';
+
+            // Update button state
+            updateLoadRelationshipsButton();
+        }
+
+        function updateLoadRelationshipsButton() {
+            const noteId = document.getElementById('manageNoteId').value;
+            const button = document.getElementById('loadRelationshipsBtn');
+
+            if (button) {
+                button.disabled = !noteId;
+            }
+        }
+
+        async function loadNoteRelationships() {
+            const noteId = document.getElementById('manageNoteId').value;
+
+            if (!noteId) {
+                showMessage('❌ Selecione uma anotação', 'error');
+                return;
+            }
+
+            const relationshipsList = document.getElementById('relationshipsList');
+            relationshipsList.innerHTML = '<div class="loading">Carregando relacionamentos...</div>';
+            relationshipsList.classList.add('show');
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/notes/${noteId}/relationships/detailed`);
+
+                if (!response.ok) {
+                    throw new Error(`Erro ${response.status}: ${response.statusText}`);
+                }
+
+                const relationships = await response.json();
+
+                if (relationships.length === 0) {
+                    relationshipsList.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">🔗</div>
+                            <div class="empty-state-title">Nenhum relacionamento encontrado</div>
+                            <div class="empty-state-text">Esta anotação ainda não possui relacionamentos.</div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const relationshipsHtml = relationships.map(rel => `
+                    <div class="relationship-item">
+                        <div class="relationship-info">
+                            <div class="relationship-title">${escapeHtml(rel.title)}</div>
+                            <span class="relationship-type">${rel.relationship_type}</span>
+                        </div>
+                        <div class="relationship-actions">
+                            <button class="btn-small btn-danger" onclick="deleteRelationship('${noteId}', '${rel.id}', '${rel.relationship_type}')">
+                                🗑️ Remover
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+
+                relationshipsList.innerHTML = `
+                    <h4>📋 Relacionamentos (${relationships.length})</h4>
+                    ${relationshipsHtml}
+                `;
+
+            } catch (error) {
+                console.error('Erro ao carregar relacionamentos:', error);
+                relationshipsList.innerHTML = `
+                    <div class="link-error">
+                        ❌ Erro ao carregar relacionamentos: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        async function deleteRelationship(sourceId, targetId, relationshipType) {
+            if (!confirm(`Tem certeza que deseja remover o relacionamento "${relationshipType}"?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/notes/${sourceId}/relationships/${targetId}?bidirectional=true`, {
+                    method: 'DELETE'
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || `Erro ${response.status}`);
+                }
+
+                showMessage('🗑️ Relacionamento removido com sucesso!', 'success');
+
+                // Reload relationships
+                loadNoteRelationships();
+
+                // Reload graph if visible
+                if (currentPage === 'graph') {
+                    loadGraph();
+                }
+
+            } catch (error) {
+                console.error('Erro ao remover relacionamento:', error);
+                showMessage(`❌ Erro ao remover relacionamento: ${error.message}`, 'error');
+            }
+        }
+
         // Settings functions
         function loadSettings() {
             // Load settings from localStorage
@@ -3750,6 +5156,7 @@
             loadNotes();
             connectWebSocket();
             loadSettings();
+            setupSemanticSearch();
         });
 
         // Save settings when they change

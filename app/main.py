@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Dict
 import json
 import os
 
@@ -91,6 +91,53 @@ class NeighborInfo(BaseModel):
 class NeighborsResponse(BaseModel):
     neighbors: List[NeighborInfo]
     count: int
+
+class ManualLinkRequest(BaseModel):
+    target_note_id: str
+    relationship_type: str = "RELATED"
+    bidirectional: bool = True
+    description: Optional[str] = None
+
+class ManualLinkResponse(BaseModel):
+    success: bool
+    message: str
+    relationship: Dict[str, str]
+    bidirectional: bool
+
+class DeleteRelationshipRequest(BaseModel):
+    target_note_id: str
+    relationship_type: Optional[str] = None
+    bidirectional: bool = True
+
+class AvailableNotesResponse(BaseModel):
+    notes: List[Dict[str, str]]  # id, title
+    total: int
+    exclude_existing_relationships: bool
+
+class SemanticSearchRequest(BaseModel):
+    query: str
+    max_results: int = 10
+    min_similarity: float = 0.3
+
+class SemanticSearchResult(BaseModel):
+    id: str
+    title: str
+    content: str
+    similarity_score: float
+    snippet: str  # Relevant excerpt from content
+
+class SemanticSearchResponse(BaseModel):
+    query: str
+    results: List[SemanticSearchResult]
+    total_results: int
+    search_time_ms: float
+
+class RelationshipInfo(BaseModel):
+    id: str
+    title: str
+    relationship_type: str
+    bidirectional: bool
+    created_manually: bool = True
 
 @app.post("/notes", response_model=NoteResponse)
 def create_new_note(note: NoteCreate):
@@ -240,19 +287,265 @@ def get_similar_notes(note_id: str, top_k: int = 5):
     sims.sort(key=lambda x: x["score"], reverse=True)
     return sims[:top_k]
 
+@app.post("/search/semantic", response_model=SemanticSearchResponse)
+def semantic_search(search_request: SemanticSearchRequest):
+    """
+    Perform semantic search across all notes using embeddings
+    """
+    import time
+    start_time = time.time()
+
+    try:
+        # Generate embedding for the search query
+        query_embedding = get_embedding(search_request.query)
+
+        # Get all notes with embeddings
+        all_notes = get_all_notes()
+
+        # Calculate similarity scores
+        search_results = []
+        for note in all_notes:
+            if not note.get('embedding'):
+                continue  # Skip notes without embeddings
+
+            similarity = cosine_similarity(query_embedding, note['embedding'])
+
+            if similarity >= search_request.min_similarity:
+                # Generate snippet (relevant excerpt)
+                snippet = generate_snippet(note['content'], search_request.query)
+
+                search_results.append(SemanticSearchResult(
+                    id=note['id'],
+                    title=note['title'],
+                    content=note['content'],
+                    similarity_score=float(similarity),
+                    snippet=snippet
+                ))
+
+        # Sort by similarity score (highest first)
+        search_results.sort(key=lambda x: x.similarity_score, reverse=True)
+
+        # Limit results
+        limited_results = search_results[:search_request.max_results]
+
+        search_time = (time.time() - start_time) * 1000  # Convert to milliseconds
+
+        return SemanticSearchResponse(
+            query=search_request.query,
+            results=limited_results,
+            total_results=len(search_results),
+            search_time_ms=round(search_time, 2)
+        )
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro na busca semântica: {str(e)}")
+
+def generate_snippet(content: str, query: str, max_length: int = 200) -> str:
+    """
+    Generate a relevant snippet from content based on the query
+    """
+    import re
+
+    # Simple snippet generation - find sentences containing query words
+    query_words = query.lower().split()
+    sentences = re.split(r'[.!?]+', content)
+
+    # Score sentences based on query word presence
+    scored_sentences = []
+    for sentence in sentences:
+        sentence = sentence.strip()
+        if not sentence:
+            continue
+
+        score = 0
+        sentence_lower = sentence.lower()
+        for word in query_words:
+            if word in sentence_lower:
+                score += 1
+
+        if score > 0:
+            scored_sentences.append((score, sentence))
+
+    if scored_sentences:
+        # Get the highest scoring sentence
+        scored_sentences.sort(key=lambda x: x[0], reverse=True)
+        best_sentence = scored_sentences[0][1]
+
+        # Truncate if too long
+        if len(best_sentence) > max_length:
+            return best_sentence[:max_length] + "..."
+        return best_sentence
+
+    # Fallback: return first part of content
+    if len(content) > max_length:
+        return content[:max_length] + "..."
+    return content
+
+@app.get("/search/semantic", response_model=SemanticSearchResponse)
+def semantic_search_get(q: str, max_results: int = 10, min_similarity: float = 0.3):
+    """
+    GET endpoint for semantic search (for easier testing and URL sharing)
+    """
+    search_request = SemanticSearchRequest(
+        query=q,
+        max_results=max_results,
+        min_similarity=min_similarity
+    )
+    return semantic_search(search_request)
+
 @app.post("/notes/{note_id}/relationships", response_model=Relationship)
 def link_notes(note_id: str, target_id: str, rel_type: str = "RELATED"):
+    """Legacy endpoint for backward compatibility"""
     # garante existência
     if not get_note(note_id) or not get_note(target_id):
         raise HTTPException(status_code=404, detail="Uma das notas não foi encontrada")
     create_relationship(note_id, target_id, rel_type)
     return {"type": rel_type, "id": target_id}
 
+@app.post("/notes/{note_id}/link", response_model=ManualLinkResponse)
+def create_manual_link(note_id: str, link_request: ManualLinkRequest):
+    """
+    Create a manual relationship between two notes
+    """
+    # Validate both notes exist
+    source_note = get_note(note_id)
+    target_note = get_note(link_request.target_note_id)
+
+    if not source_note:
+        raise HTTPException(status_code=404, detail="Nota de origem não encontrada")
+    if not target_note:
+        raise HTTPException(status_code=404, detail="Nota de destino não encontrada")
+
+    if note_id == link_request.target_note_id:
+        raise HTTPException(status_code=400, detail="Uma nota não pode se relacionar consigo mesma")
+
+    try:
+        # Create the primary relationship
+        create_relationship(note_id, link_request.target_note_id, link_request.relationship_type)
+
+        # Create bidirectional relationship if requested
+        if link_request.bidirectional:
+            create_relationship(link_request.target_note_id, note_id, link_request.relationship_type)
+
+        return ManualLinkResponse(
+            success=True,
+            message=f"Relacionamento '{link_request.relationship_type}' criado com sucesso",
+            relationship={
+                "from": note_id,
+                "to": link_request.target_note_id,
+                "type": link_request.relationship_type
+            },
+            bidirectional=link_request.bidirectional
+        )
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao criar relacionamento: {str(e)}")
+
+@app.delete("/notes/{note_id}/relationships/{target_note_id}")
+def delete_manual_relationship(note_id: str, target_note_id: str, bidirectional: bool = True):
+    """
+    Delete a relationship between two notes
+    """
+    # Validate both notes exist
+    if not get_note(note_id) or not get_note(target_note_id):
+        raise HTTPException(status_code=404, detail="Uma das notas não foi encontrada")
+
+    try:
+        # Delete the primary relationship
+        with driver.session() as session:
+            session.run(
+                "MATCH (a:Note {id: $from_id})-[r]->(b:Note {id: $to_id}) DELETE r",
+                from_id=note_id,
+                to_id=target_note_id
+            )
+
+            # Delete bidirectional relationship if requested
+            if bidirectional:
+                session.run(
+                    "MATCH (a:Note {id: $from_id})-[r]->(b:Note {id: $to_id}) DELETE r",
+                    from_id=target_note_id,
+                    to_id=note_id
+                )
+
+        return {"success": True, "message": "Relacionamento removido com sucesso"}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao remover relacionamento: {str(e)}")
+
 @app.get("/notes/{note_id}/relationships", response_model=List[Relationship])
 def list_relationships(note_id: str):
     if not get_note(note_id):
         raise HTTPException(status_code=404, detail="Nota não encontrada")
     return get_relationships(note_id)
+
+@app.get("/notes/{note_id}/available-links", response_model=AvailableNotesResponse)
+def get_available_notes_for_linking(note_id: str, exclude_existing: bool = True):
+    """
+    Get list of notes that can be linked to the specified note
+    """
+    if not get_note(note_id):
+        raise HTTPException(status_code=404, detail="Nota não encontrada")
+
+    try:
+        all_notes = get_all_notes()
+        available_notes = []
+
+        # Get existing relationships if we need to exclude them
+        existing_relationships = set()
+        if exclude_existing:
+            relationships = get_relationships(note_id)
+            existing_relationships = {rel["id"] for rel in relationships}
+
+        for note in all_notes:
+            # Skip the note itself
+            if note["id"] == note_id:
+                continue
+
+            # Skip notes that already have relationships if requested
+            if exclude_existing and note["id"] in existing_relationships:
+                continue
+
+            available_notes.append({
+                "id": note["id"],
+                "title": note["title"]
+            })
+
+        return AvailableNotesResponse(
+            notes=available_notes,
+            total=len(available_notes),
+            exclude_existing_relationships=exclude_existing
+        )
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao buscar notas disponíveis: {str(e)}")
+
+@app.get("/notes/{note_id}/relationships/detailed", response_model=List[RelationshipInfo])
+def get_detailed_relationships(note_id: str):
+    """
+    Get detailed information about relationships including note titles
+    """
+    if not get_note(note_id):
+        raise HTTPException(status_code=404, detail="Nota não encontrada")
+
+    try:
+        relationships = get_relationships(note_id)
+        detailed_relationships = []
+
+        for rel in relationships:
+            related_note = get_note(rel["id"])
+            if related_note:
+                detailed_relationships.append(RelationshipInfo(
+                    id=rel["id"],
+                    title=related_note["title"],
+                    relationship_type=rel["type"],
+                    bidirectional=True,  # We'll assume bidirectional for now
+                    created_manually=True
+                ))
+
+        return detailed_relationships
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao buscar relacionamentos detalhados: {str(e)}")
 
 @app.get("/graph")
 def get_graph():
