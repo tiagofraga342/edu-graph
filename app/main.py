@@ -19,9 +19,7 @@ from db.neo4j import (
 )
 from services.embedding import get_embedding
 from services.similarity import cosine_similarity
-from services.linking import link_similar_notes, link_similar_notes_enhanced
-from services.advanced_similarity import advanced_analyzer
-from services.similarity_config import get_config, create_custom_config, CONFIGS
+from services.linking import link_similar_notes
 from services.media import media_service
 from realtime import manager
 
@@ -94,57 +92,13 @@ class NeighborsResponse(BaseModel):
     neighbors: List[NeighborInfo]
     count: int
 
-class SimilarityDetails(BaseModel):
-    semantic: float
-    keyword: float
-    structural: float
-    topic: float
-    overall: float
-
-class EnhancedSimilarNote(BaseModel):
-    id: str
-    score: float
-    relationship_type: str
-    details: SimilarityDetails
-
-class RelationshipAnalysis(BaseModel):
-    semantic: List[EnhancedSimilarNote]
-    hierarchical: List[EnhancedSimilarNote]
-    sequential: List[EnhancedSimilarNote]
-    conceptual: List[EnhancedSimilarNote]
-    weak: List[EnhancedSimilarNote]
-
-class SimilarityConfigRequest(BaseModel):
-    config_name: Optional[str] = 'default'
-    semantic_weight: Optional[float] = None
-    keyword_weight: Optional[float] = None
-    structural_weight: Optional[float] = None
-    topic_weight: Optional[float] = None
-    min_threshold: Optional[float] = None
-
-class LinkingResult(BaseModel):
-    relationships_created: Dict[str, int]
-    total_relationships: int
-    config_used: str
-
 @app.post("/notes", response_model=NoteResponse)
-def create_new_note(note: NoteCreate, use_enhanced_linking: bool = True):
+def create_new_note(note: NoteCreate):
     embedding = get_embedding(note.content)
     data = {"title": note.title, "content": note.content, "embedding": embedding}
     new_note = create_note(data)
     create_note_node(new_note["id"])
-
-    # Use enhanced linking by default
-    if use_enhanced_linking:
-        try:
-            advanced_analyzer.create_smart_relationships(new_note["id"], embedding)
-        except Exception as e:
-            # Fallback to basic linking if enhanced fails
-            print(f"Enhanced linking failed, using basic linking: {e}")
-            link_similar_notes(new_note["id"], embedding)
-    else:
-        link_similar_notes(new_note["id"], embedding)
-
+    link_similar_notes(new_note["id"], embedding)
     return new_note
 
 @app.post("/notes/batch", response_model=List[NoteResponse])
@@ -285,112 +239,6 @@ def get_similar_notes(note_id: str, top_k: int = 5):
         sims.append({"id": n["id"], "score": float(score)})
     sims.sort(key=lambda x: x["score"], reverse=True)
     return sims[:top_k]
-
-@app.get("/notes/{note_id}/analyze", response_model=RelationshipAnalysis)
-def analyze_note_relationships(note_id: str, config_name: str = 'default'):
-    """
-    Perform comprehensive relationship analysis for a note
-    """
-    note = get_note(note_id)
-    if not note:
-        raise HTTPException(status_code=404, detail="Nota não encontrada")
-
-    embedding = note.get('embedding', [])
-    if not embedding:
-        raise HTTPException(status_code=400, detail="Nota não possui embedding")
-
-    try:
-        # Get configuration
-        config = get_config(config_name)
-
-        # Perform analysis
-        relationships = advanced_analyzer.analyze_note_relationships(
-            note_id, embedding, advanced_analysis=True
-        )
-
-        # Convert to response format
-        def convert_relationships(rel_list):
-            return [
-                EnhancedSimilarNote(
-                    id=rel['note_id'],
-                    score=rel['score'],
-                    relationship_type=rel['type'],
-                    details=SimilarityDetails(**rel.get('details', {
-                        'semantic': 0, 'keyword': 0, 'structural': 0, 'topic': 0, 'overall': rel['score']
-                    }))
-                ) for rel in rel_list
-            ]
-
-        return RelationshipAnalysis(
-            semantic=convert_relationships(relationships.get('semantic', [])),
-            hierarchical=convert_relationships(relationships.get('hierarchical', [])),
-            sequential=convert_relationships(relationships.get('sequential', [])),
-            conceptual=convert_relationships(relationships.get('conceptual', [])),
-            weak=convert_relationships(relationships.get('weak', []))
-        )
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Erro na análise: {str(e)}")
-
-@app.post("/notes/{note_id}/link-enhanced", response_model=LinkingResult)
-def create_enhanced_links(note_id: str, config_request: SimilarityConfigRequest):
-    """
-    Create enhanced relationships using advanced similarity analysis
-    """
-    note = get_note(note_id)
-    if not note:
-        raise HTTPException(status_code=404, detail="Nota não encontrada")
-
-    embedding = note.get('embedding', [])
-    if not embedding:
-        raise HTTPException(status_code=400, detail="Nota não possui embedding")
-
-    try:
-        # Get or create configuration
-        if config_request.config_name and config_request.config_name in CONFIGS:
-            config = get_config(config_request.config_name)
-            config_used = config_request.config_name
-        else:
-            # Create custom config from request parameters
-            custom_params = {k: v for k, v in config_request.dict().items()
-                           if v is not None and k != 'config_name'}
-            config = create_custom_config(**custom_params)
-            config_used = 'custom'
-
-        # Create smart relationships
-        relationship_counts = advanced_analyzer.create_smart_relationships(
-            note_id,
-            embedding,
-            max_relationships_per_type=config.max_relationships_per_type
-        )
-
-        total_relationships = sum(relationship_counts.values())
-
-        return LinkingResult(
-            relationships_created=relationship_counts,
-            total_relationships=total_relationships,
-            config_used=config_used
-        )
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Erro ao criar relacionamentos: {str(e)}")
-
-@app.get("/similarity/configs")
-def list_similarity_configs():
-    """List available similarity configurations"""
-    return {
-        "available_configs": list(CONFIGS.keys()),
-        "default_config": "default",
-        "config_descriptions": {
-            "default": "Balanced approach with moderate thresholds",
-            "semantic_focused": "Emphasizes semantic similarity from embeddings",
-            "keyword_focused": "Emphasizes keyword and TF-IDF similarity",
-            "strict": "High thresholds, fewer relationships",
-            "permissive": "Lower thresholds, more relationships",
-            "academic": "Optimized for academic/research content",
-            "creative": "Optimized for creative/artistic content"
-        }
-    }
 
 @app.post("/notes/{note_id}/relationships", response_model=Relationship)
 def link_notes(note_id: str, target_id: str, rel_type: str = "RELATED"):
