@@ -3,14 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🧠 Edu-graph</title>
-    <!-- CSS do vis-network -->
-    <link
-    href="https://unpkg.com/vis-network@9.0.4/dist/vis-network.min.css"
-    rel="stylesheet"
-    />
-    <!-- JS do vis-network -->
-    <script src="https://unpkg.com/vis-network@9.0.4/dist/vis-network.min.js"></script>
+    <title>Edu-graph</title>
     <style>
         * {
             margin: 0;
@@ -18,172 +11,1373 @@
             box-sizing: border-box;
         }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            color: #333;
+        :root {
+            --notion-bg: #ffffff;
+            --notion-sidebar: #f7f6f3;
+            --notion-text: #37352f;
+            --notion-text-light: #787774;
+            --notion-border: #e9e9e7;
+            --notion-hover: #f1f1ef;
+            --notion-blue: #2383e2;
+            --notion-blue-light: #e7f3ff;
+            --notion-red: #e03e3e;
+            --notion-green: #0f7b0f;
+            --notion-yellow: #dfab01;
+            --notion-purple: #9065b0;
+            --notion-shadow: rgba(15, 15, 15, 0.1);
+            --notion-shadow-hover: rgba(15, 15, 15, 0.2);
         }
 
-        .container {
-            max-width: 1200px;
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, 'Apple Color Emoji', Arial, sans-serif, 'Segoe UI Emoji', 'Segoe UI Symbol';
+            background-color: var(--notion-bg);
+            color: var(--notion-text);
+            line-height: 1.5;
+        }
+
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 240px;
+            background-color: var(--notion-sidebar);
+            border-right: 1px solid var(--notion-border);
+            padding: 16px 0;
+            flex-shrink: 0;
+        }
+
+        .sidebar-header {
+            padding: 0 16px 16px;
+            border-bottom: 1px solid var(--notion-border);
+            margin-bottom: 16px;
+        }
+
+        .sidebar-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--notion-text);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sidebar-nav {
+            padding: 0 8px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 8px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 14px;
+            color: var(--notion-text-light);
+            margin-bottom: 2px;
+            transition: background-color 0.15s ease;
+        }
+
+        .nav-item:hover {
+            background-color: var(--notion-hover);
+        }
+
+        .nav-item.active {
+            background-color: var(--notion-blue-light);
+            color: var(--notion-blue);
+        }
+
+        .nav-icon {
+            width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .page-header {
+            padding: 48px 96px 24px;
+            border-bottom: 1px solid var(--notion-border);
+        }
+
+        .page-title {
+            font-size: 40px;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 8px;
+        }
+
+        .page-subtitle {
+            font-size: 16px;
+            color: var(--notion-text-light);
+        }
+
+        .page-content {
+            padding: 0 96px;
+            max-width: 900px;
+        }
+
+        /* Notes List */
+        .notes-section {
+            margin: 32px 0;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--notion-text);
+        }
+
+        .add-note-btn {
+            background: var(--notion-blue);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 3px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.15s ease;
+        }
+
+        .add-note-btn:hover {
+            background: #1a73d1;
+        }
+
+        .notes-grid {
+            display: grid;
+            gap: 8px;
+        }
+
+        .note-card {
+            border: 1px solid var(--notion-border);
+            border-radius: 3px;
+            padding: 16px;
+            background: var(--notion-bg);
+            cursor: pointer;
+            transition: box-shadow 0.15s ease, transform 0.15s ease;
+        }
+
+        .note-card:hover {
+            box-shadow: 0 2px 4px var(--notion-shadow);
+            transform: translateY(-1px);
+        }
+
+        .note-card.selected {
+            border-color: var(--notion-blue);
+            box-shadow: 0 0 0 1px var(--notion-blue);
+        }
+
+        .note-card.being-edited {
+            border-color: #ffc107;
+            background: linear-gradient(135deg, #fff9e6, #ffffff);
+            position: relative;
+        }
+
+        .note-card.being-edited::before {
+            content: "✏️ Sendo editada";
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: #ffc107;
+            color: #000;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        .edit-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-top: 8px;
+        }
+
+        .edit-btn:hover {
+            background: #218838;
+        }
+
+        .edit-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .edit-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .auto-save-indicator {
+            color: #28a745;
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .auto-save-indicator.show {
+            opacity: 1;
+        }
+
+        /* Attachment styles */
+        .attachments-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        .attachment-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            font-size: 14px;
+            max-width: 200px;
+        }
+
+        .attachment-icon {
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .attachment-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .attachment-name {
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .attachment-size {
+            font-size: 12px;
+            color: #6c757d;
+        }
+
+        .attachment-actions {
+            display: flex;
+            gap: 4px;
+        }
+
+        .attachment-btn {
+            background: none;
+            border: none;
+            padding: 2px;
+            cursor: pointer;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+
+        .attachment-btn:hover {
+            background: #e9ecef;
+        }
+
+        .attachment-btn.delete {
+            color: #dc3545;
+        }
+
+        .attachment-btn.download {
+            color: #007bff;
+        }
+
+        .form-help {
+            display: block;
+            margin-top: 4px;
+            font-size: 12px;
+            color: #6c757d;
+        }
+
+        .note-attachments {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .note-attachments-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #6c757d;
+            margin-bottom: 8px;
+        }
+
+        /* Dedicated Edit Page Styles */
+        .edit-page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--notion-border);
+            background: var(--notion-bg);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .back-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: none;
+            border: none;
+            color: var(--notion-text);
+            font-size: 14px;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: background-color 0.15s ease;
+        }
+
+        .back-btn:hover {
+            background: var(--notion-hover);
+        }
+
+        .edit-status-bar {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .edit-status-text {
+            font-size: 14px;
+            color: var(--notion-text-light);
+        }
+
+        .edit-page-content {
+            padding: 0;
+            height: calc(100vh - 120px);
+            overflow-y: auto;
+        }
+
+        .edit-container {
+            max-width: 800px;
             margin: 0 auto;
+            padding: 40px 24px;
+        }
+
+        .edit-page-title {
+            width: 100%;
+            border: none;
+            outline: none;
+            background: transparent;
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--notion-text);
+            margin-bottom: 16px;
+            padding: 0;
+            line-height: 1.2;
+            font-family: inherit;
+        }
+
+        .edit-page-title::placeholder {
+            color: var(--notion-text-light);
+        }
+
+        .edit-page-textarea {
+            width: 100%;
+            border: none;
+            outline: none;
+            background: transparent;
+            font-size: 16px;
+            color: var(--notion-text);
+            line-height: 1.6;
+            resize: none;
+            min-height: 400px;
+            padding: 0;
+            font-family: inherit;
+        }
+
+        .edit-page-textarea::placeholder {
+            color: var(--notion-text-light);
+        }
+
+        .edit-attachments-section {
+            margin-top: 40px;
+            padding-top: 24px;
+            border-top: 1px solid var(--notion-border);
+        }
+
+        .attachments-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .attachments-header h3 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--notion-text);
+        }
+
+        .add-attachment-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--notion-blue);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background-color 0.15s ease;
+        }
+
+        .add-attachment-btn:hover {
+            background: #1a73d1;
+        }
+
+        /* Auto-resize textarea */
+        .edit-page-textarea {
+            overflow: hidden;
+        }
+
+        /* Markdown rendering styles */
+        .markdown-content {
+            line-height: 1.6;
+            color: var(--notion-text);
+        }
+
+        .markdown-content h1,
+        .markdown-content h2,
+        .markdown-content h3,
+        .markdown-content h4,
+        .markdown-content h5,
+        .markdown-content h6 {
+            margin: 24px 0 16px 0;
+            font-weight: 600;
+            line-height: 1.25;
+            color: var(--notion-text);
+        }
+
+        .markdown-content h1 { font-size: 2em; border-bottom: 1px solid var(--notion-border); padding-bottom: 8px; }
+        .markdown-content h2 { font-size: 1.5em; }
+        .markdown-content h3 { font-size: 1.25em; }
+        .markdown-content h4 { font-size: 1em; }
+        .markdown-content h5 { font-size: 0.875em; }
+        .markdown-content h6 { font-size: 0.85em; color: var(--notion-text-light); }
+
+        .markdown-content p {
+            margin: 16px 0;
+        }
+
+        .markdown-content ul,
+        .markdown-content ol {
+            margin: 16px 0;
+            padding-left: 24px;
+        }
+
+        .markdown-content li {
+            margin: 4px 0;
+        }
+
+        .markdown-content blockquote {
+            margin: 16px 0;
+            padding: 0 16px;
+            border-left: 4px solid var(--notion-border);
+            color: var(--notion-text-light);
+            font-style: italic;
+        }
+
+        .markdown-content code {
+            background: #f6f8fa;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: 'SF Mono', Monaco, Inconsolata, 'Roboto Mono', Consolas, 'Courier New', monospace;
+            font-size: 0.85em;
+        }
+
+        .markdown-content pre {
+            background: #f6f8fa;
+            padding: 16px;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin: 16px 0;
+        }
+
+        .markdown-content pre code {
+            background: none;
+            padding: 0;
+        }
+
+        .markdown-content table {
+            border-collapse: collapse;
+            margin: 16px 0;
+            width: 100%;
+        }
+
+        .markdown-content th,
+        .markdown-content td {
+            border: 1px solid var(--notion-border);
+            padding: 8px 12px;
+            text-align: left;
+        }
+
+        .markdown-content th {
+            background: var(--notion-hover);
+            font-weight: 600;
+        }
+
+        .markdown-content a {
+            color: var(--notion-blue);
+            text-decoration: none;
+        }
+
+        .markdown-content a:hover {
+            text-decoration: underline;
+        }
+
+        .markdown-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 6px;
+            margin: 16px 0;
+        }
+
+        .markdown-content hr {
+            border: none;
+            border-top: 1px solid var(--notion-border);
+            margin: 24px 0;
+        }
+
+        .markdown-content .task-list-item {
+            list-style: none;
+            margin-left: -24px;
+        }
+
+        .markdown-content .task-list-item input {
+            margin-right: 8px;
+        }
+
+        /* Markdown preview toggle */
+        .markdown-toggle {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            border: 1px solid var(--notion-border);
+            border-radius: 6px;
+            padding: 4px;
+            background: var(--notion-hover);
+        }
+
+        .markdown-toggle button {
+            flex: 1;
+            padding: 8px 16px;
+            border: none;
+            background: transparent;
+            color: var(--notion-text);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.15s ease;
+        }
+
+        .markdown-toggle button.active {
+            background: var(--notion-bg);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .markdown-toggle button:hover:not(.active) {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .edit-content-container {
+            position: relative;
+        }
+
+        .markdown-preview {
+            min-height: 400px;
+            padding: 16px;
+            border: 1px solid var(--notion-border);
+            border-radius: 6px;
+            background: var(--notion-bg);
+            display: none;
+        }
+
+        .markdown-preview.active {
+            display: block;
+        }
+
+        .edit-page-textarea.hidden {
+            display: none;
+        }
+
+        /* Markdown toolbar */
+        .markdown-toolbar {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 16px;
+            padding: 8px;
+            background: var(--notion-hover);
+            border: 1px solid var(--notion-border);
+            border-radius: 6px;
+            flex-wrap: wrap;
+        }
+
+        .markdown-toolbar button {
+            padding: 6px 10px;
+            border: none;
+            background: transparent;
+            color: var(--notion-text);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background-color 0.15s ease;
+            min-width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .markdown-toolbar button:hover {
+            background: var(--notion-bg);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .markdown-toolbar button strong,
+        .markdown-toolbar button em {
+            font-style: normal;
+            font-weight: bold;
+        }
+
+        .markdown-toolbar button em {
+            font-style: italic;
+            font-weight: normal;
+        }
+
+        /* Markdown help section */
+        .markdown-help-section {
+            margin: 24px 0;
+        }
+
+        .markdown-help-section details {
+            border: 1px solid var(--notion-border);
+            border-radius: 6px;
+            padding: 0;
+        }
+
+        .markdown-help-section summary {
+            padding: 12px 16px;
+            cursor: pointer;
+            font-weight: 500;
+            background: var(--notion-hover);
+            border-radius: 6px;
+            user-select: none;
+        }
+
+        .markdown-help-section summary:hover {
+            background: var(--notion-border);
+        }
+
+        .markdown-help-content {
+            padding: 16px;
+            border-top: 1px solid var(--notion-border);
+        }
+
+        .help-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+        }
+
+        .help-item {
+            padding: 12px;
+            background: var(--notion-hover);
+            border-radius: 6px;
+        }
+
+        .help-item strong {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--notion-text);
+        }
+
+        .help-item code {
+            background: var(--notion-bg);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'SF Mono', Monaco, Inconsolata, 'Roboto Mono', Consolas, 'Courier New', monospace;
+            font-size: 12px;
+            display: inline-block;
+            margin: 2px 0;
+        }
+
+        .help-item kbd {
+            background: var(--notion-text);
+            color: var(--notion-bg);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: inherit;
+            font-size: 11px;
+            font-weight: 500;
+            display: inline-block;
+            margin: 1px;
+        }
+
+        /* Path Finder Styles */
+        .path-finder-section {
+            background: var(--notion-bg);
+            border: 1px solid var(--notion-border);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .path-finder-section h3 {
+            margin: 0 0 16px 0;
+            color: var(--notion-text);
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .path-finder-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 16px;
+            align-items: end;
+            margin-bottom: 20px;
+        }
+
+        .path-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .path-input-group label {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--notion-text);
+        }
+
+        .path-select {
+            padding: 8px 12px;
+            border: 1px solid var(--notion-border);
+            border-radius: 6px;
+            background: var(--notion-bg);
+            color: var(--notion-text);
+            font-size: 14px;
+            min-width: 200px;
+            width: 100%;
+        }
+
+        .path-select:focus {
+            outline: none;
+            border-color: var(--notion-blue);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+        }
+
+        .path-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-width: 180px;
+        }
+
+        .path-buttons .btn {
+            white-space: nowrap;
+            padding: 10px 16px;
+            font-size: 14px;
+            font-weight: 500;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .path-buttons .btn-primary {
+            background: var(--notion-blue);
+            color: white;
+        }
+
+        .path-buttons .btn-primary:hover {
+            background: #0056b3;
+        }
+
+        .path-buttons .btn-secondary {
+            background: var(--notion-hover);
+            color: var(--notion-text);
+            border: 1px solid var(--notion-border);
+        }
+
+        .path-buttons .btn-secondary:hover {
+            background: var(--notion-border);
+        }
+
+        /* Search select styles */
+        .search-select-container {
+            position: relative;
+            width: 100%;
+        }
+
+        .path-search {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--notion-border);
+            border-radius: 6px;
+            background: var(--notion-bg);
+            color: var(--notion-text);
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.15s ease;
+        }
+
+        .path-search:focus {
+            border-color: var(--notion-blue);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+        }
+
+        .path-search.has-selection {
+            background: #e3f2fd;
+            border-color: var(--notion-blue);
+        }
+
+        .search-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--notion-bg);
+            border: 1px solid var(--notion-border);
+            border-top: none;
+            border-radius: 0 0 6px 6px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .search-dropdown-item {
+            padding: 10px 12px;
+            cursor: pointer;
+            border-bottom: 1px solid var(--notion-border);
+            transition: background-color 0.15s ease;
+        }
+
+        .search-dropdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .search-dropdown-item:hover {
+            background: var(--notion-hover);
+        }
+
+        .search-dropdown-item.selected {
+            background: var(--notion-blue);
+            color: white;
+        }
+
+        .search-dropdown-item-title {
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+
+        .search-dropdown-item-content {
+            font-size: 12px;
+            color: var(--notion-text-light);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .search-dropdown-empty {
+            padding: 12px;
+            text-align: center;
+            color: var(--notion-text-light);
+            font-style: italic;
+        }
+
+        .path-results {
+            background: var(--notion-hover);
+            border-radius: 6px;
+            padding: 16px;
+            display: none;
+        }
+
+        .path-results.show {
+            display: block;
+        }
+
+        .path-result-item {
+            background: var(--notion-bg);
+            border: 1px solid var(--notion-border);
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+
+        .path-result-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .path-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .path-length {
+            background: var(--notion-blue);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .path-nodes {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .path-node {
+            background: var(--notion-hover);
+            border: 1px solid var(--notion-border);
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background-color 0.15s ease;
+        }
+
+        .path-node:hover {
+            background: var(--notion-border);
+        }
+
+        .path-arrow {
+            color: var(--notion-text-light);
+            font-size: 14px;
+        }
+
+        .path-error {
+            color: #dc3545;
+            font-style: italic;
+            text-align: center;
             padding: 20px;
         }
 
-        .header {
-            text-align: center;
-            color: white;
-            margin-bottom: 40px;
+        /* Settings page styles */
+        .settings-section {
+            background: var(--notion-bg);
+            border: 1px solid var(--notion-border);
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
         }
 
-        .header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        .settings-section h3 {
+            margin: 0 0 20px 0;
+            color: var(--notion-text);
+            font-size: 18px;
+            font-weight: 600;
         }
 
-        .header p {
-            font-size: 1.1rem;
-            opacity: 0.9;
-        }
-
-        .main-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            margin-bottom: 40px;
-        }
-
-        .card {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.3);
-        }
-
-        .card h2 {
-            color: #4a5568;
+        .setting-item {
             margin-bottom: 20px;
-            font-size: 1.5rem;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--notion-border);
+        }
+
+        .setting-item:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .setting-label {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .setting-label input[type="checkbox"] {
+            margin-top: 2px;
+            width: 16px;
+            height: 16px;
+            accent-color: var(--notion-blue);
+        }
+
+        .setting-text {
+            flex: 1;
+        }
+
+        .setting-text strong {
+            display: block;
+            color: var(--notion-text);
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .setting-text small {
+            color: var(--notion-text-light);
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
+        .setting-select {
+            width: 200px;
+            padding: 8px 12px;
+            border: 1px solid var(--notion-border);
+            border-radius: 6px;
+            background: var(--notion-bg);
+            color: var(--notion-text);
+            font-size: 14px;
+            margin-top: 8px;
+        }
+
+        .setting-select:focus {
+            outline: none;
+            border-color: var(--notion-blue);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 12px;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        /* Responsive design for path finder */
+        @media (max-width: 768px) {
+            .path-finder-controls {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .path-buttons {
+                flex-direction: row;
+                justify-content: stretch;
+                min-width: auto;
+            }
+
+            .path-buttons button {
+                flex: 1;
+            }
+
+            .path-nodes {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .path-arrow {
+                transform: rotate(90deg);
+                align-self: center;
+            }
+
+            .settings-section {
+                padding: 16px;
+            }
+
+            .setting-label {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .setting-select {
+                width: 100%;
+            }
+
+            .search-dropdown {
+                max-height: 150px;
+            }
+
+            .search-dropdown-item {
+                padding: 8px 10px;
+            }
+
+            .search-dropdown-item-title {
+                font-size: 14px;
+            }
+
+            .search-dropdown-item-content {
+                font-size: 11px;
+            }
+        }
+
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .path-finder-controls {
+                grid-template-columns: 1fr 1fr;
+                gap: 12px;
+            }
+
+            .path-buttons {
+                grid-column: 1 / -1;
+                flex-direction: row;
+                justify-content: center;
+                min-width: auto;
+            }
+        }
+
+        /* Responsive design for edit page */
+        @media (max-width: 768px) {
+            .edit-page-header {
+                padding: 12px 16px;
+            }
+
+            .edit-container {
+                padding: 24px 16px;
+            }
+
+            .edit-page-title {
+                font-size: 24px;
+            }
+
+            .edit-page-textarea {
+                font-size: 14px;
+            }
+
+            .attachments-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+
+            .markdown-toggle {
+                flex-direction: column;
+            }
+        }
+
+        .note-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            line-height: 1.3;
+        }
+
+        .note-content {
+            font-size: 14px;
+            color: var(--notion-text-light);
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .note-meta {
+            margin-top: 12px;
+            font-size: 12px;
+            color: var(--notion-text-light);
+            font-family: 'SF Mono', Monaco, Inconsolata, 'Roboto Mono', Consolas, 'Courier New', monospace;
+        }
+
+        /* Similar Notes */
+        .similar-notes {
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 1px solid var(--notion-border);
+        }
+
+        .similarity-score {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 2px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-left: 8px;
+        }
+
+        .similarity-high { background: #d3f8d3; color: var(--notion-green); }
+        .similarity-medium { background: #fff2cd; color: var(--notion-yellow); }
+        .similarity-low { background: #ffe2e2; color: var(--notion-red); }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 15, 15, 0.6);
+            z-index: 1000;
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: var(--notion-bg);
+            border-radius: 6px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow: hidden;
+            box-shadow: 0 16px 70px var(--notion-shadow-hover);
+        }
+
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--notion-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: var(--notion-text-light);
+            padding: 4px;
+            border-radius: 3px;
+        }
+
+        .close-btn:hover {
+            background: var(--notion-hover);
+        }
+
+        .modal-body {
+            padding: 24px;
         }
 
         .form-group {
             margin-bottom: 20px;
         }
 
-        .form-group label {
+        .form-label {
             display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #4a5568;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 6px;
+            color: var(--notion-text);
         }
 
-        .form-group input, .form-group textarea {
+        .form-input {
             width: 100%;
-            padding: 12px;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
+            padding: 8px 12px;
+            border: 1px solid var(--notion-border);
+            border-radius: 3px;
             font-size: 16px;
-            transition: all 0.3s ease;
+            font-family: inherit;
+            transition: border-color 0.15s ease;
         }
 
-        .form-group input:focus, .form-group textarea:focus {
+        .form-input:focus {
             outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            border-color: var(--notion-blue);
+            box-shadow: 0 0 0 2px var(--notion-blue-light);
         }
 
-        .form-group textarea {
+        .form-textarea {
             min-height: 120px;
             resize: vertical;
+            font-family: inherit;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 24px;
         }
 
         .btn {
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            color: white;
-            padding: 12px 30px;
+            padding: 8px 16px;
             border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
+            border-radius: 3px;
+            font-size: 14px;
+            font-weight: 500;
             cursor: pointer;
-            transition: all 0.3s ease;
-            width: 100%;
+            transition: background-color 0.15s ease;
         }
 
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        .btn-primary {
+            background: var(--notion-blue);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1a73d1;
+        }
+
+        .btn-secondary {
+            background: var(--notion-bg);
+            color: var(--notion-text);
+            border: 1px solid var(--notion-border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--notion-hover);
         }
 
         .btn:disabled {
-            opacity: 0.6;
+            opacity: 0.5;
             cursor: not-allowed;
-            transform: none;
         }
 
-        .notes-list {
-            max-height: 400px;
-            overflow-y: auto;
-        }
-
-        .note-item {
-            background: #f7fafc;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 15px;
-            border-left: 4px solid #667eea;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-
-        .note-item:hover {
-            transform: translateX(5px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-
-        .note-item.selected {
-            background: #e6fffa;
-            border-left-color: #22c55e;
-            box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2);
-        }
-
-        .note-item h3 {
-            color: #2d3748;
-            margin-bottom: 8px;
-            font-size: 1.1rem;
-        }
-
-        .note-item p {
-            color: #718096;
-            font-size: 0.9rem;
-            line-height: 1.4;
-        }
-
-        .note-id {
-            font-size: 0.8rem;
-            color: #a0aec0;
-            margin-top: 8px;
-            font-family: monospace;
-        }
-
+        /* Loading State */
         .loading {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            padding: 40px;
+            color: var(--notion-text-light);
         }
 
         .spinner {
-            width: 20px;
-            height: 20px;
-            border: 2px solid #f3f3f3;
-            border-top: 2px solid #667eea;
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--notion-border);
+            border-top: 2px solid var(--notion-blue);
             border-radius: 50%;
             animation: spin 1s linear infinite;
+            margin-right: 8px;
         }
 
         @keyframes spin {
@@ -191,147 +1385,710 @@
             100% { transform: rotate(360deg); }
         }
 
-        .message {
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 48px 24px;
+            color: var(--notion-text-light);
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty-state-title {
+            font-size: 16px;
             font-weight: 500;
+            margin-bottom: 8px;
+            color: var(--notion-text);
+        }
+
+        .empty-state-text {
+            font-size: 14px;
+        }
+
+        /* Message */
+        .message {
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 14px;
         }
 
         .message.success {
-            background: #f0fff4;
-            color: #22543d;
-            border: 1px solid #9ae6b4;
+            background: #d3f8d3;
+            color: var(--notion-green);
+            border: 1px solid #a8e6a8;
         }
 
         .message.error {
-            background: #fff5f5;
-            color: #742a2a;
-            border: 1px solid #feb2b2;
+            background: #ffe2e2;
+            color: var(--notion-red);
+            border: 1px solid #ffb3b3;
         }
 
-        .stats {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 15px;
-            padding: 20px;
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-
-        .stats h3 {
-            color: #4a5568;
-            margin-bottom: 10px;
-        }
-
-        .stats-number {
-            font-size: 2rem;
-            font-weight: bold;
-            color: #667eea;
-        }
-
+        /* Responsive */
         @media (max-width: 768px) {
-            .main-content {
-                grid-template-columns: 1fr;
+            .app-container {
+                flex-direction: column;
             }
             
-            .header h1 {
-                font-size: 2rem;
+            .sidebar {
+                width: 100%;
+                order: 2;
+            }
+            
+            .main-content {
+                order: 1;
+            }
+            
+            .page-header,
+            .page-content {
+                padding-left: 24px;
+                padding-right: 24px;
+            }
+            
+            .page-title {
+                font-size: 32px;
+            }
+            
+            .modal-content {
+                margin: 20px;
+                width: calc(100% - 40px);
             }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🧠 Edu-graph</h1>
-            <p>Adicione anotações e descubra conexões automáticas baseadas em similaridade semântica</p>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-title">
+                    🧠 Edu-graph
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-item active" data-page="notes">
+                    <span class="nav-icon">📝</span>
+                    Anotações
+                </div>
+                <div class="nav-item" data-page="graph">
+                    <span class="nav-icon">🔗</span>
+                    Grafo de Conexões
+                </div>
+                <div class="nav-item" data-page="settings">
+                    <span class="nav-icon">⚙️</span>
+                    Configurações
+                </div>
+            </nav>
         </div>
 
+        <!-- Main Content -->
         <div class="main-content">
-            <div class="card">
-                <h2>📝 Adicionar Nova Anotação</h2>
-                <div id="message"></div>
-                <form id="noteForm">
-                    <div class="form-group">
-                        <label for="title">Título da Anotação</label>
-                        <input type="text" id="title" name="title" required placeholder="Digite o título da sua nota...">
+            <!-- Notes Page -->
+            <div id="notes-page" class="page">
+                <div class="page-header">
+                    <h1 class="page-title">Anotações</h1>
+                    <p class="page-subtitle">Gerencie suas anotações e descubra conexões automáticas baseadas em similaridade semântica</p>
+                </div>
+                
+                <div class="page-content">
+                    <div id="message"></div>
+                    
+                    <div class="notes-section">
+                        <div class="section-header">
+                            <h2 class="section-title">Suas Anotações</h2>
+                            <button class="add-note-btn" onclick="startNewNote()">
+                                + Nova Anotação
+                            </button>
+                        </div>
+                        <div class="notes-grid" id="notesList">
+                            <div class="loading">
+                                <div class="spinner"></div>
+                                Carregando anotações...
+                            </div>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="text">Conteúdo da Anotação</label>
-                        <textarea id="text" name="text" required placeholder="Escreva o conteúdo da sua nota aqui..."></textarea>
+
+                    <div class="similar-notes" id="similarNotesSection" style="display: none;">
+                        <h2 class="section-title">Anotações Similares</h2>
+                        <div class="notes-grid" id="similarNotesList"></div>
                     </div>
-                    <button type="submit" class="btn" id="submitBtn">
-                        Adicionar Anotação
+                </div>
+            </div>
+
+            <!-- Graph Page -->
+            <div id="graph-page" class="page" style="display: none;">
+                <div class="page-header">
+                    <h1 class="page-title">Grafo de Conexões</h1>
+                    <p class="page-subtitle">Visualize as conexões entre suas anotações em um grafo interativo</p>
+                </div>
+
+                <div class="page-content">
+                    <!-- Path Finding Controls -->
+                    <div class="path-finder-section">
+                        <h3>🔍 Encontrar Caminho entre Anotações</h3>
+                        <div class="path-finder-controls">
+                            <div class="path-input-group">
+                                <label for="startNoteSearch">Anotação de Origem:</label>
+                                <div class="search-select-container">
+                                    <input type="text" id="startNoteSearch" class="path-search" placeholder="Digite para buscar..." autocomplete="off">
+                                    <div id="startNoteDropdown" class="search-dropdown" style="display: none;"></div>
+                                    <input type="hidden" id="startNoteId" value="">
+                                </div>
+                            </div>
+                            <div class="path-input-group">
+                                <label for="endNoteSearch">Anotação de Destino:</label>
+                                <div class="search-select-container">
+                                    <input type="text" id="endNoteSearch" class="path-search" placeholder="Digite para buscar..." autocomplete="off">
+                                    <div id="endNoteDropdown" class="search-dropdown" style="display: none;"></div>
+                                    <input type="hidden" id="endNoteId" value="">
+                                </div>
+                            </div>
+                            <div class="path-input-group">
+                                <label for="pathDepth">Profundidade Máxima:</label>
+                                <select id="pathDepth" class="path-select">
+                                    <option value="3">3 passos</option>
+                                    <option value="4">4 passos</option>
+                                    <option value="5">5 passos</option>
+                                    <option value="6">6 passos</option>
+                                    <option value="7">7 passos</option>
+                                </select>
+                            </div>
+                            <div class="path-buttons">
+                                <button id="findShortestPath" class="btn btn-primary" onclick="findShortestPath()">
+                                    🎯 Caminho Mais Curto
+                                </button>
+                                <button id="findAllPaths" class="btn btn-secondary" onclick="findAllPaths()">
+                                    🔀 Todos os Caminhos
+                                </button>
+                                <button class="btn btn-secondary" onclick="clearPathSearch()">
+                                    🗑️ Limpar
+                                </button>
+                            </div>
+                        </div>
+                        <div id="pathResults" class="path-results"></div>
+                    </div>
+
+                    <div id="graph-container" style="width: 100%; height: 600px; border: 1px solid var(--notion-border); border-radius: 6px; margin-top: 24px;"></div>
+                </div>
+            </div>
+
+            <!-- Dedicated Note Editing Page -->
+            <div id="edit-page" class="page" style="display: none;">
+                <div class="edit-page-header">
+                    <button class="back-btn" onclick="exitEditMode()">
+                        ← Voltar às Anotações
                     </button>
-                </form>
-            </div>
+                    <div class="edit-status-bar">
+                        <span id="editPageStatus" class="edit-status-text">Editando...</span>
+                        <span id="autoSaveIndicator" class="auto-save-indicator">Salvo</span>
+                    </div>
+                </div>
 
-            <div class="card">
-                <h2>📚 Anotações Cadastradas</h2>
-                <div class="notes-list" id="notesList">
-                    <p style="text-align: center; color: #718096; padding: 20px;">
-                        Carregando anotações...
-                    </p>
+                <div class="edit-page-content">
+                    <div class="edit-container">
+                        <input type="text" id="editPageTitle" class="edit-page-title" placeholder="Título da anotação...">
+
+                        <div class="markdown-toggle">
+                            <button id="editModeBtn" class="active" onclick="switchEditMode('edit')">✏️ Editar</button>
+                            <button id="previewModeBtn" onclick="switchEditMode('preview')">👁️ Visualizar</button>
+                        </div>
+
+                        <div id="markdownToolbar" class="markdown-toolbar">
+                            <button onclick="insertMarkdown('**', '**', 'texto em negrito')" title="Negrito (Ctrl+B)">
+                                <strong>B</strong>
+                            </button>
+                            <button onclick="insertMarkdown('*', '*', 'texto em itálico')" title="Itálico (Ctrl+I)">
+                                <em>I</em>
+                            </button>
+                            <button onclick="insertMarkdown('`', '`', 'código')" title="Código (Ctrl+Shift+C)">
+                                &lt;/&gt;
+                            </button>
+                            <button onclick="insertMarkdown('[', '](url)', 'texto do link')" title="Link (Ctrl+K)">
+                                🔗
+                            </button>
+                            <button onclick="insertMarkdown('## ', '', 'Título')" title="Título">
+                                H
+                            </button>
+                            <button onclick="insertMarkdown('- ', '', 'item da lista')" title="Lista">
+                                📋
+                            </button>
+                            <button onclick="insertMarkdown('- [ ] ', '', 'tarefa')" title="Lista de tarefas">
+                                ☑️
+                            </button>
+                            <button onclick="insertMarkdown('> ', '', 'citação')" title="Citação">
+                                💬
+                            </button>
+                            <button onclick="insertMarkdown('```\n', '\n```', 'código aqui')" title="Bloco de código">
+                                📄
+                            </button>
+                        </div>
+
+                        <div class="edit-content-container">
+                            <textarea id="editPageContent" class="edit-page-textarea" placeholder="Comece a escrever sua anotação... (Markdown suportado)"></textarea>
+                            <div id="markdownPreview" class="markdown-preview markdown-content"></div>
+                        </div>
+
+                        <div class="markdown-help-section">
+                            <details>
+                                <summary>📖 Guia de Markdown</summary>
+                                <div class="markdown-help-content">
+                                    <div class="help-grid">
+                                        <div class="help-item">
+                                            <strong>Títulos:</strong>
+                                            <code># Título 1</code><br>
+                                            <code>## Título 2</code><br>
+                                            <code>### Título 3</code>
+                                        </div>
+                                        <div class="help-item">
+                                            <strong>Formatação:</strong>
+                                            <code>**negrito**</code><br>
+                                            <code>*itálico*</code><br>
+                                            <code>`código`</code>
+                                        </div>
+                                        <div class="help-item">
+                                            <strong>Listas:</strong>
+                                            <code>- Item 1</code><br>
+                                            <code>- Item 2</code><br>
+                                            <code>1. Numerada</code><br>
+                                            <code>- [ ] Tarefa</code><br>
+                                            <code>- [x] Concluída</code>
+                                        </div>
+                                        <div class="help-item">
+                                            <strong>Links e Imagens:</strong>
+                                            <code>[texto](url)</code><br>
+                                            <code>![alt](imagem.jpg)</code>
+                                        </div>
+                                        <div class="help-item">
+                                            <strong>Outros:</strong>
+                                            <code>> Citação</code><br>
+                                            <code>---</code> (linha)<br>
+                                            <code>```código```</code>
+                                        </div>
+                                        <div class="help-item">
+                                            <strong>Atalhos:</strong>
+                                            <kbd>Ctrl+B</kbd> Negrito<br>
+                                            <kbd>Ctrl+I</kbd> Itálico<br>
+                                            <kbd>Ctrl+K</kbd> Link<br>
+                                            <kbd>Ctrl+Shift+P</kbd> Preview
+                                        </div>
+                                    </div>
+                                </div>
+                            </details>
+                        </div>
+
+                        <div class="edit-attachments-section">
+                            <div class="attachments-header">
+                                <h3>Anexos</h3>
+                                <label for="editPageAttachments" class="add-attachment-btn">
+                                    📎 Adicionar Arquivo
+                                    <input type="file" id="editPageAttachments" multiple accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.txt,.zip,.rar" style="display: none;">
+                                </label>
+                            </div>
+                            <div id="editPageAttachmentsList" class="attachments-list"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div class="main-content">
-            <div class="card">
-                <h2>🔗 Anotações Similares</h2>
-                <p style="margin-bottom: 15px; color: #718096;">Clique em uma anotação acima para ver suas similaridades</p>
-                <div class="notes-list" id="similarNotesList">
-                    <p style="text-align: center; color: #718096; padding: 20px;">
-                        Selecione uma anotação para ver as similaridades
-                    </p>
+            <!-- Settings Page -->
+            <div id="settings-page" class="page" style="display: none;">
+                <div class="page-header">
+                    <h1 class="page-title">Configurações</h1>
+                    <p class="page-subtitle">Personalize sua experiência com o edu-graph</p>
+                </div>
+
+                <div class="page-content">
+                    <div class="settings-section">
+                        <h3>📝 Comportamento das Anotações</h3>
+                        <div class="setting-item">
+                            <label class="setting-label">
+                                <input type="checkbox" id="redirectToEditAfterCreate" checked>
+                                <span class="setting-text">
+                                    <strong>Redirecionar para edição após criar anotação</strong>
+                                    <small>Quando ativado, você será redirecionado para a página de edição após criar uma nova anotação</small>
+                                </span>
+                            </label>
+                        </div>
+                        <div class="setting-item">
+                            <label class="setting-label">
+                                <input type="checkbox" id="autoSaveEnabled" checked>
+                                <span class="setting-text">
+                                    <strong>Salvamento automático</strong>
+                                    <small>Salva automaticamente suas alterações durante a edição</small>
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3>🎨 Interface</h3>
+                        <div class="setting-item">
+                            <label class="setting-label">
+                                <input type="checkbox" id="showMarkdownPreview" checked>
+                                <span class="setting-text">
+                                    <strong>Mostrar prévia do Markdown</strong>
+                                    <small>Exibe o botão de prévia na edição de anotações</small>
+                                </span>
+                            </label>
+                        </div>
+                        <div class="setting-item">
+                            <label class="setting-label">
+                                <input type="checkbox" id="showAttachmentCount" checked>
+                                <span class="setting-text">
+                                    <strong>Mostrar contador de anexos</strong>
+                                    <small>Exibe o número de anexos nos cartões das anotações</small>
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3>🔗 Grafo e Conexões</h3>
+                        <div class="setting-item">
+                            <label class="setting-label">
+                                <span class="setting-text">
+                                    <strong>Profundidade máxima para busca de caminhos</strong>
+                                    <small>Número máximo de passos para encontrar conexões entre anotações</small>
+                                </span>
+                            </label>
+                            <select id="maxPathDepth" class="setting-select">
+                                <option value="3">3 passos</option>
+                                <option value="4">4 passos</option>
+                                <option value="5">5 passos</option>
+                                <option value="6" selected>6 passos</option>
+                                <option value="7">7 passos</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3>💾 Dados</h3>
+                        <div class="setting-item">
+                            <button class="btn btn-secondary" onclick="exportNotes()">
+                                📤 Exportar Anotações
+                            </button>
+                            <small>Baixa todas as suas anotações em formato JSON</small>
+                        </div>
+                        <div class="setting-item">
+                            <button class="btn btn-danger" onclick="confirmResetData()">
+                                🗑️ Limpar Todos os Dados
+                            </button>
+                            <small>Remove todas as anotações, anexos e conexões (irreversível)</small>
+                        </div>
+                    </div>
                 </div>
             </div>
-
-        <div class="stats">
-            <h3>Total de Anotações</h3>
-            <div class="stats-number" id="notesCount">0</div>
         </div>
     </div>
 
-    <div id="graph-container" style="width: 100%; height: 500px; border: 1px solid #ccc; margin-top: 20px;"></div>
+    <!-- Add Note Modal -->
+    <div class="modal" id="addNoteModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Nova Anotação</h3>
+                <button class="close-btn" onclick="closeAddNoteModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="noteForm">
+                    <div class="form-group">
+                        <label class="form-label" for="title">Título</label>
+                        <input type="text" id="title" class="form-input" placeholder="Digite o título da sua anotação..." required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="content">Conteúdo</label>
+                        <textarea id="content" class="form-input form-textarea" placeholder="Escreva o conteúdo da sua anotação aqui..." required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="attachments">Anexos</label>
+                        <input type="file" id="attachments" class="form-input" multiple accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.txt,.zip,.rar">
+                        <small class="form-help">Máximo 50MB por arquivo. Tipos suportados: imagens, vídeos, áudios, documentos e arquivos compactados.</small>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="closeAddNoteModal()">Cancelar</button>
+                        <button type="submit" class="btn btn-primary" id="submitBtn">Adicionar Anotação</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Note Modal -->
+    <div class="modal" id="editNoteModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Editar Anotação</h3>
+                <div class="edit-status" id="editStatus"></div>
+                <button class="close-btn" onclick="closeEditNoteModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="editNoteForm">
+                    <div class="form-group">
+                        <label class="form-label" for="editTitle">Título</label>
+                        <input type="text" id="editTitle" class="form-input" placeholder="Digite o título da sua anotação..." required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="editContent">Conteúdo</label>
+                        <textarea id="editContent" class="form-input form-textarea" placeholder="Escreva o conteúdo da sua anotação aqui..." required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Anexos Atuais</label>
+                        <div id="currentAttachments" class="attachments-list"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="editAttachments">Adicionar Novos Anexos</label>
+                        <input type="file" id="editAttachments" class="form-input" multiple accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.txt,.zip,.rar">
+                        <small class="form-help">Máximo 50MB por arquivo. Tipos suportados: imagens, vídeos, áudios, documentos e arquivos compactados.</small>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="closeEditNoteModal()">Cancelar</button>
+                        <button type="submit" class="btn btn-primary" id="editSubmitBtn">Salvar Alterações</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Graph visualization library -->
+    <script src="https://unpkg.com/vis-network@9.0.4/dist/vis-network.min.js"></script>
+
+    <!-- Markdown parser and renderer -->
+    <script src="https://cdn.jsdelivr.net/npm/marked@9.1.6/marked.min.js"></script>
+
+    <!-- Syntax highlighting for code blocks -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 
     <script>
         const API_BASE_URL = 'http://localhost:8000';
+        const WS_BASE_URL = 'ws://localhost:8000';
         let notes = [];
         let selectedNoteId = null;
+        let currentPage = 'notes';
+        let websocket = null;
+        let userId = null;
+        let isEditing = false;
+        let editingNoteId = null;
+        let autoSaveTimeout = null;
+        let currentEditMode = 'edit'; // 'edit' or 'preview'
+        let isCreatingNewNote = false;
 
-        // Elementos do DOM
-        const noteForm = document.getElementById('noteForm');
+        // DOM Elements
         const messageDiv = document.getElementById('message');
         const notesList = document.getElementById('notesList');
         const similarNotesList = document.getElementById('similarNotesList');
+        const similarNotesSection = document.getElementById('similarNotesSection');
         const submitBtn = document.getElementById('submitBtn');
-        const notesCount = document.getElementById('notesCount');
+        const noteForm = document.getElementById('noteForm');
+        const addNoteModal = document.getElementById('addNoteModal');
+        const editNoteModal = document.getElementById('editNoteModal');
+        const editNoteForm = document.getElementById('editNoteForm');
 
-        // Função para mostrar mensagens
+        // Navigation
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const page = item.dataset.page;
+                switchPage(page);
+            });
+        });
+
+        function switchPage(page) {
+            // Update navigation (only for main pages, not edit page)
+            if (page !== 'edit') {
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    item.classList.toggle('active', item.dataset.page === page);
+                });
+            }
+
+            // Update pages
+            document.querySelectorAll('.page').forEach(pageEl => {
+                pageEl.style.display = 'none';
+            });
+
+            document.getElementById(`${page}-page`).style.display = 'block';
+            currentPage = page;
+
+            // Load page-specific content
+            if (page === 'graph') {
+                loadGraph();
+                populateNoteSelects();
+            } else if (page === 'settings') {
+                loadSettings();
+            }
+        }
+
+        // Modal functions
+        function openAddNoteModal() {
+            addNoteModal.classList.add('show');
+            document.getElementById('title').focus();
+        }
+
+        function closeAddNoteModal() {
+            addNoteModal.classList.remove('show');
+            noteForm.reset();
+            document.getElementById('attachments').value = '';
+            showMessage('', 'success'); // Clear messages
+        }
+
+        // Legacy function - now redirects to edit page
+        function openEditModal(noteId) {
+            startEditingNote(noteId);
+        }
+
+        function displayCurrentAttachments(attachments, container) {
+            if (!attachments || attachments.length === 0) {
+                container.innerHTML = '<p style="color: #6c757d; font-style: italic;">Nenhum anexo</p>';
+                return;
+            }
+
+            const attachmentsHTML = attachments.map(att => `
+                <div class="attachment-item">
+                    <span class="attachment-icon">${getFileIcon(att.file_type)}</span>
+                    <div class="attachment-info">
+                        <div class="attachment-name">${escapeHtml(att.original_filename)}</div>
+                        <div class="attachment-size">${formatFileSize(att.file_size)}</div>
+                    </div>
+                    <div class="attachment-actions">
+                        <button class="attachment-btn download" onclick="downloadAttachment('${att.id}', '${escapeHtml(att.original_filename)}')" title="Download">
+                            ⬇️
+                        </button>
+                        <button class="attachment-btn delete" onclick="removeAttachment('${att.id}')" title="Remover">
+                            🗑️
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+
+            container.innerHTML = attachmentsHTML;
+        }
+
+        async function removeAttachment(attachmentId) {
+            if (!confirm('Tem certeza que deseja remover este anexo?')) {
+                return;
+            }
+
+            try {
+                await deleteAttachment(attachmentId);
+                showMessage('✅ Anexo removido com sucesso!', 'success');
+
+                // Refresh the note data and update the modal
+                await loadNotes();
+                if (editingNoteId) {
+                    const note = notes.find(n => n.id === editingNoteId);
+                    if (note) {
+                        displayCurrentAttachments(note.attachments || [], document.getElementById('currentAttachments'));
+                    }
+                }
+            } catch (error) {
+                showMessage('❌ Erro ao remover anexo', 'error');
+            }
+        }
+
+        function closeEditNoteModal() {
+            const editModal = document.getElementById('editNoteModal');
+            editModal.classList.remove('show');
+
+            // Clear file input
+            document.getElementById('editAttachments').value = '';
+
+            // Stop editing
+            if (editingNoteId) {
+                stopEditingNote(editingNoteId);
+            }
+
+            // Clear auto-save
+            if (autoSaveTimeout) {
+                clearTimeout(autoSaveTimeout);
+                autoSaveTimeout = null;
+            }
+        }
+
+        function setupAutoSave(noteId) {
+            const editTitle = document.getElementById('editTitle');
+            const editContent = document.getElementById('editContent');
+
+            function scheduleAutoSave() {
+                if (autoSaveTimeout) {
+                    clearTimeout(autoSaveTimeout);
+                }
+
+                autoSaveTimeout = setTimeout(() => {
+                    autoSaveNote(noteId);
+                }, 2000); // Auto-save after 2 seconds of inactivity
+            }
+
+            editTitle.addEventListener('input', scheduleAutoSave);
+            editContent.addEventListener('input', scheduleAutoSave);
+        }
+
+        async function autoSaveNote(noteId) {
+            const editTitle = document.getElementById('editTitle');
+            const editContent = document.getElementById('editContent');
+            const editStatus = document.getElementById('editStatus');
+
+            try {
+                editStatus.innerHTML = '<span style="color: #007bff;">💾 Salvando...</span>';
+
+                const response = await fetch(`${API_BASE_URL}/notes/${noteId}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        title: editTitle.value.trim(),
+                        content: editContent.value.trim()
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Erro ${response.status}: ${response.statusText}`);
+                }
+
+                editStatus.innerHTML = '<span style="color: #28a745;">✅ Salvo automaticamente</span>';
+
+                // Clear the status after 2 seconds
+                setTimeout(() => {
+                    editStatus.innerHTML = '<span style="color: #28a745;">✏️ Editando...</span>';
+                }, 2000);
+
+            } catch (error) {
+                console.error('Erro no auto-save:', error);
+                editStatus.innerHTML = '<span style="color: #dc3545;">❌ Erro ao salvar</span>';
+            }
+        }
+
+        // Message functions
         function showMessage(text, type = 'success') {
+            if (!text) {
+                messageDiv.innerHTML = '';
+                return;
+            }
             messageDiv.innerHTML = `<div class="message ${type}">${text}</div>`;
             setTimeout(() => {
                 messageDiv.innerHTML = '';
             }, 5000);
         }
 
-        // Função para mostrar loading
+        // Loading functions
         function showLoading(show = true) {
             if (show) {
-                submitBtn.innerHTML = '<div class="loading"><div class="spinner"></div>Processando...</div>';
+                submitBtn.innerHTML = '<div style="display: flex; align-items: center; gap: 8px;"><div class="spinner"></div>Processando...</div>';
                 submitBtn.disabled = true;
             } else {
-                submitBtn.innerHTML = 'Adicionar Nota';
+                submitBtn.innerHTML = 'Adicionar Anotação';
                 submitBtn.disabled = false;
             }
         }
 
-        // Função para adicionar nota
-        async function addNote(title, text) {
+        // API functions
+        async function addNote(title, content, attachments = []) {
             try {
                 showLoading(true);
-                
+
                 const response = await fetch(`${API_BASE_URL}/notes`, {
                     method: 'POST',
                     headers: {
@@ -339,7 +2096,7 @@
                     },
                     body: JSON.stringify({
                         title: title,
-                        content: text
+                        content: content
                     })
                 });
 
@@ -348,49 +2105,66 @@
                 }
 
                 const result = await response.json();
-                
-                showMessage(`✅ Nota "${title}" adicionada com sucesso! ID: ${result.id}`, 'success');
-                
-                document.querySelector('#title').value = ''
-                document.querySelector('#text').value  = ''
 
-                await loadNotes()
-                await loadGraph()
+                // Upload attachments if any
+                if (attachments.length > 0) {
+                    for (const file of attachments) {
+                        try {
+                            await uploadAttachment(result.id, file);
+                        } catch (error) {
+                            console.error(`Erro ao fazer upload de ${file.name}:`, error);
+                            showMessage(`⚠️ Erro ao fazer upload de ${file.name}`, 'error');
+                        }
+                    }
+                }
 
-                // Limpa o formulário
-                noteForm.reset();
-                
+                showMessage(`✅ Anotação "${title}" adicionada com sucesso!`, 'success');
+
+                await loadNotes();
+                closeAddNoteModal();
+
+                // Check user preference for redirecting to edit page
+                const redirectToEdit = document.getElementById('redirectToEditAfterCreate')?.checked ?? true;
+                if (redirectToEdit) {
+                    // Redirect to edit page for the newly created note
+                    startEditingNote(result.id);
+                }
+
             } catch (error) {
-                console.error('Erro ao adicionar nota:', error);
-                showMessage(`❌ Erro ao adicionar nota: ${error.message}`, 'error');
+                console.error('Erro ao adicionar anotação:', error);
+                showMessage(`❌ Erro ao adicionar anotação: ${error.message}`, 'error');
             } finally {
                 showLoading(false);
             }
         }
 
-        // Função para carregar todas as notas da API
         async function loadNotes() {
             try {
                 const response = await fetch(`${API_BASE_URL}/notes`);
                 if (!response.ok) {
                     throw new Error(`Erro ${response.status}: ${response.statusText}`);
                 }
-                
+
                 notes = await response.json();
                 updateNotesList();
-                updateStats();
-                
+
+                // Update path finder selects if on graph page
+                if (currentPage === 'graph') {
+                    populateNoteSelects();
+                }
+
             } catch (error) {
-                console.error('Erro ao carregar notas:', error);
+                console.error('Erro ao carregar anotações:', error);
                 notesList.innerHTML = `
-                    <p style="text-align: center; color: #e53e3e; padding: 20px;">
-                        ❌ Erro ao carregar notas: ${error.message}
-                    </p>
+                    <div class="empty-state">
+                        <div class="empty-state-icon">⚠️</div>
+                        <div class="empty-state-title">Erro ao carregar anotações</div>
+                        <div class="empty-state-text">${error.message}</div>
+                    </div>
                 `;
             }
         }
 
-        // Função para carregar notas similares
         async function loadSimilarNotes(noteId) {
             try {
                 const response = await fetch(`${API_BASE_URL}/notes/${noteId}/similar?top_k=5`);
@@ -402,116 +2176,938 @@
                 updateSimilarNotesList(similarNotes, noteId);
                 
             } catch (error) {
-                console.error('Erro ao carregar notas similares:', error);
+                console.error('Erro ao carregar anotações similares:', error);
                 similarNotesList.innerHTML = `
-                    <p style="text-align: center; color: #e53e3e; padding: 20px;">
-                        ❌ Erro ao carregar similaridades: ${error.message}
-                    </p>
+                    <div class="empty-state">
+                        <div class="empty-state-icon">⚠️</div>
+                        <div class="empty-state-title">Erro ao carregar similaridades</div>
+                        <div class="empty-state-text">${error.message}</div>
+                    </div>
                 `;
             }
         }
-        // Função para atualizar a lista de notas
+
+        async function loadGraph() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/graph`);
+                if (!response.ok) {
+                    throw new Error('Falha ao carregar grafo');
+                }
+                
+                const { nodes, edges } = await response.json();
+
+                const container = document.getElementById("graph-container");
+                const data = { 
+                    nodes: new vis.DataSet(nodes.map(node => ({
+                        ...node,
+                        font: { size: 14, color: '#37352f' },
+                        color: {
+                            background: '#ffffff',
+                            border: '#2383e2',
+                            highlight: { background: '#e7f3ff', border: '#1a73d1' }
+                        }
+                    }))), 
+                    edges: new vis.DataSet(edges.map(edge => ({
+                        ...edge,
+                        color: { color: '#787774' },
+                        arrows: { to: { enabled: true, scaleFactor: 0.8 } }
+                    })))
+                };
+                
+                const options = {
+                    layout: { 
+                        improvedLayout: true,
+                        randomSeed: 2
+                    },
+                    physics: { 
+                        enabled: true,
+                        stabilization: { iterations: 100 }
+                    },
+                    nodes: { 
+                        shape: "dot", 
+                        size: 20,
+                        borderWidth: 2,
+                        shadow: true
+                    },
+                    edges: {
+                        width: 2,
+                        smooth: { type: 'continuous' }
+                    },
+                    interaction: {
+                        hover: true,
+                        selectConnectedEdges: false
+                    }
+                };
+                
+                new vis.Network(container, data, options);
+                
+            } catch (error) {
+                console.error('Erro ao carregar grafo:', error);
+                document.getElementById("graph-container").innerHTML = `
+                    <div class="empty-state" style="height: 100%; display: flex; flex-direction: column; justify-content: center;">
+                        <div class="empty-state-icon">🔗</div>
+                        <div class="empty-state-title">Erro ao carregar grafo</div>
+                        <div class="empty-state-text">${error.message}</div>
+                    </div>
+                `;
+            }
+        }
+
+        // Update functions
         function updateNotesList() {
             if (notes.length === 0) {
                 notesList.innerHTML = `
-                    <p style="text-align: center; color: #718096; padding: 20px;">
-                        Nenhuma nota cadastrada ainda. Adicione sua primeira nota!
-                    </p>
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📝</div>
+                        <div class="empty-state-title">Nenhuma anotação ainda</div>
+                        <div class="empty-state-text">Comece criando sua primeira anotação!</div>
+                    </div>
                 `;
                 return;
             }
 
             const notesHTML = notes.map(note => `
-                <div class="note-item ${selectedNoteId === note.id ? 'selected' : ''}" onclick="selectNote('${note.id}', '${escapeHtml(note.title)}')">
-                    <h3>${escapeHtml(note.title)}</h3>
-                    <div class="note-id">ID: ${note.id}</div>
+                <div class="note-card ${selectedNoteId === note.id ? 'selected' : ''}"
+                     data-note-id="${note.id}" onclick="selectNote('${note.id}')">
+                    <div class="note-title">${escapeHtml(note.title)}</div>
+                    <div class="note-content markdown-content">${renderMarkdownPreview(note.content)}</div>
+                    ${note.attachments && note.attachments.length > 0 && (localStorage.getItem('showAttachmentCount') !== 'false') ? `
+                        <div class="note-attachments">
+                            <div class="note-attachments-title">📎 ${note.attachments.length} anexo(s)</div>
+                            <div class="attachments-list">
+                                ${note.attachments.slice(0, 3).map(att => `
+                                    <div class="attachment-item">
+                                        <span class="attachment-icon">${getFileIcon(att.file_type)}</span>
+                                        <span class="attachment-name">${escapeHtml(att.original_filename)}</span>
+                                    </div>
+                                `).join('')}
+                                ${note.attachments.length > 3 ? `<span class="attachment-item">+${note.attachments.length - 3} mais</span>` : ''}
+                            </div>
+                        </div>
+                    ` : ''}
+                    <div class="note-meta">ID: ${note.id}</div>
+                    <button class="edit-btn" onclick="event.stopPropagation(); startEditingNote('${note.id}')">
+                        ✏️ Editar
+                    </button>
                 </div>
             `).join('');
 
             notesList.innerHTML = notesHTML;
         }
 
-        // Função para atualizar a lista de notas similares
         function updateSimilarNotesList(similarNotes, selectedId) {
             if (similarNotes.length === 0) {
-                similarNotesList.innerHTML = `
-                    <p style="text-align: center; color: #718096; padding: 20px;">
-                        Esta nota não possui similaridades com outras notas (score > 0.75)
-                    </p>
-                `;
+                similarNotesSection.style.display = 'none';
                 return;
             }
 
-            const selectedNote = notes.find(n => n.id === selectedId);
-            const similarHTML = `
-                <div style="margin-bottom: 20px; padding: 15px; background: #f0f4f8; border-radius: 8px;">
-                    <h4 style="color: #2d3748; margin-bottom: 5px;">📝 Nota Selecionada:</h4>
-                    <p style="color: #4a5568; font-weight: 600;">${escapeHtml(selectedNote.title)}</p>
-                </div>
-                <h4 style="color: #4a5568; margin-bottom: 15px;">🔗 Notas Similares:</h4>
-                ${similarNotes.map(sim => {
-                    const note = notes.find(n => n.id === sim.id);
-                    const percentage = (sim.score * 100).toFixed(1);
-                    return `
-                        <div class="note-item" style="border-left-color: ${getScoreColor(sim.score)};">
-                            <h3>${escapeHtml(note ? note.title : 'Nota não encontrada')}</h3>
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
-                                <div class="note-id">ID: ${sim.id}</div>
-                                <div style="background: ${getScoreColor(sim.score)}; color: white; padding: 4px 8px; border-radius: 12px; font-size: 0.8rem; font-weight: bold;">
-                                    ${percentage}% similar
-                                </div>
-                            </div>
+            similarNotesSection.style.display = 'block';
+            
+            const similarHTML = similarNotes.map(sim => {
+                const note = notes.find(n => n.id === sim.id);
+                const percentage = (sim.score * 100).toFixed(1);
+                const scoreClass = sim.score >= 0.8 ? 'similarity-high' : 
+                                 sim.score >= 0.6 ? 'similarity-medium' : 'similarity-low';
+                
+                return `
+                    <div class="note-card">
+                        <div class="note-title">
+                            ${escapeHtml(note ? note.title : 'Anotação não encontrada')}
+                            <span class="similarity-score ${scoreClass}">${percentage}%</span>
                         </div>
-                    `;
-                }).join('')}
-            `;
+                        <div class="note-content markdown-content">${note ? renderMarkdownPreview(note.content) : ''}</div>
+                        <div class="note-meta">ID: ${sim.id}</div>
+                    </div>
+                `;
+            }).join('');
 
             similarNotesList.innerHTML = similarHTML;
         }
 
-        // Função para selecionar uma nota
-        function selectNote(noteId, noteTitle) {
+        // Real-time editing handlers
+        function handleEditorStatus(message) {
+            const noteCard = document.querySelector(`[data-note-id="${message.note_id}"]`);
+            if (noteCard) {
+                if (message.is_editing && message.editor_id !== userId) {
+                    noteCard.classList.add('being-edited');
+                    noteCard.setAttribute('title', `Being edited by ${message.editor_id}`);
+                } else {
+                    noteCard.classList.remove('being-edited');
+                    noteCard.removeAttribute('title');
+                }
+            }
+        }
+
+        function handleEditPermission(message) {
+            if (message.granted) {
+                isEditing = true;
+                editingNoteId = message.note_id;
+
+                // Update edit page status
+                if (currentPage === 'edit') {
+                    const editPageStatus = document.getElementById('editPageStatus');
+                    if (editPageStatus) {
+                        editPageStatus.textContent = 'Editando...';
+                        editPageStatus.style.color = '#28a745';
+                    }
+                }
+            } else {
+                showMessage('❌ Não foi possível editar a anotação. Outro usuário pode estar editando.', 'error');
+
+                // Return to notes page if edit was denied
+                if (currentPage === 'edit') {
+                    switchPage('notes');
+                }
+            }
+        }
+
+        function handleEditDenied(message) {
+            showMessage(`❌ ${message.reason}`, 'error');
+        }
+
+        function handleNoteChange(message) {
+            // Handle real-time changes from other users
+            if (editingNoteId === message.note_id && isEditing) {
+                // Apply changes to the current editing session
+                applyRemoteChange(message.change);
+            }
+        }
+
+        function handleNoteSaved(message) {
+            // Update local notes array
+            const noteIndex = notes.findIndex(n => n.id === message.note_id);
+            if (noteIndex !== -1) {
+                notes[noteIndex] = message.note;
+                updateNotesList();
+            }
+
+            // Update edit page if currently editing this note
+            if (currentPage === 'edit' && editingNoteId === message.note_id) {
+                const autoSaveIndicator = document.getElementById('autoSaveIndicator');
+                if (autoSaveIndicator) {
+                    autoSaveIndicator.textContent = 'Salvo';
+                    autoSaveIndicator.style.color = '#28a745';
+                }
+            }
+        }
+
+        function handleNoteUpdated(message) {
+            // Update local notes array when note is updated via API
+            const noteIndex = notes.findIndex(n => n.id === message.note_id);
+            if (noteIndex !== -1) {
+                notes[noteIndex] = message.note;
+                updateNotesList();
+            }
+        }
+
+        function applyRemoteChange(change) {
+            // This would implement operational transformation for text changes
+            // For now, we'll just show a notification
+            showMessage('📝 Anotação atualizada por outro usuário', 'info');
+        }
+
+        // Helper functions
+        function selectNote(noteId) {
             selectedNoteId = noteId;
-            updateNotesList(); // Rerender para mostrar seleção
+            updateNotesList();
             loadSimilarNotes(noteId);
+
+            // Subscribe to real-time updates for this note
+            if (websocket) {
+                sendWebSocketMessage({
+                    type: 'subscribe',
+                    note_id: noteId
+                });
+            }
         }
 
-        // Função para determinar cor baseada no score
-        function getScoreColor(score) {
-            if (score >= 0.9) return '#22c55e'; // Verde forte
-            if (score >= 0.8) return '#3b82f6'; // Azul
-            if (score >= 0.75) return '#f59e0b'; // Amarelo/Laranja
-            return '#6b7280'; // Cinza
+        function startEditingNote(noteId) {
+            // Switch to edit page
+            switchPage('edit');
+
+            // Load the note data
+            const note = notes.find(n => n.id === noteId);
+            if (!note) {
+                showMessage('❌ Anotação não encontrada', 'error');
+                switchPage('notes');
+                return;
+            }
+
+            // Set up edit page
+            setupEditPage(note);
+
+            // Request editing permission via WebSocket
+            if (websocket) {
+                sendWebSocketMessage({
+                    type: 'start_editing',
+                    note_id: noteId
+                });
+            }
         }
 
-        // Função para atualizar estatísticas
-        function updateStats() {
-            notesCount.textContent = notes.length;
+        function stopEditingNote(noteId) {
+            if (websocket && isEditing && editingNoteId === noteId) {
+                sendWebSocketMessage({
+                    type: 'stop_editing',
+                    note_id: noteId
+                });
+                isEditing = false;
+                editingNoteId = null;
+            }
         }
 
-        // Função para escapar HTML
+        function setupEditPage(note) {
+            const editPageTitle = document.getElementById('editPageTitle');
+            const editPageContent = document.getElementById('editPageContent');
+            const editPageAttachmentsList = document.getElementById('editPageAttachmentsList');
+            const editPageStatus = document.getElementById('editPageStatus');
+            const autoSaveIndicator = document.getElementById('autoSaveIndicator');
+            const markdownToggle = document.querySelector('.markdown-toggle');
+
+            // Set note data
+            editPageTitle.value = note.title;
+            editPageContent.value = note.content;
+            editingNoteId = note.id;
+
+            // Show/hide Markdown preview toggle based on user preference
+            const showMarkdownPreview = localStorage.getItem('showMarkdownPreview') !== 'false';
+            if (markdownToggle) {
+                markdownToggle.style.display = showMarkdownPreview ? 'flex' : 'none';
+            }
+
+            // Display attachments
+            displayEditPageAttachments(note.attachments || []);
+
+            // Set up auto-resize for textarea
+            setupAutoResize(editPageContent);
+
+            // Set up auto-save
+            setupEditPageAutoSave(note.id);
+
+            // Focus on title
+            editPageTitle.focus();
+            editPageTitle.setSelectionRange(editPageTitle.value.length, editPageTitle.value.length);
+        }
+
+        function setupAutoResize(textarea) {
+            function resize() {
+                textarea.style.height = 'auto';
+                textarea.style.height = Math.max(400, textarea.scrollHeight) + 'px';
+            }
+
+            textarea.addEventListener('input', resize);
+            resize(); // Initial resize
+        }
+
+        function displayEditPageAttachments(attachments) {
+            const container = document.getElementById('editPageAttachmentsList');
+
+            if (!attachments || attachments.length === 0) {
+                container.innerHTML = '<p style="color: var(--notion-text-light); font-style: italic;">Nenhum anexo</p>';
+                return;
+            }
+
+            const attachmentsHTML = attachments.map(att => `
+                <div class="attachment-item">
+                    <span class="attachment-icon">${getFileIcon(att.file_type)}</span>
+                    <div class="attachment-info">
+                        <div class="attachment-name">${escapeHtml(att.original_filename)}</div>
+                        <div class="attachment-size">${formatFileSize(att.file_size)}</div>
+                    </div>
+                    <div class="attachment-actions">
+                        <button class="attachment-btn download" onclick="downloadAttachment('${att.id}', '${escapeHtml(att.original_filename)}')" title="Download">
+                            ⬇️
+                        </button>
+                        <button class="attachment-btn delete" onclick="removeEditPageAttachment('${att.id}')" title="Remover">
+                            🗑️
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+
+            container.innerHTML = attachmentsHTML;
+        }
+
+        function setupEditPageAutoSave(noteId) {
+            const editPageTitle = document.getElementById('editPageTitle');
+            const editPageContent = document.getElementById('editPageContent');
+
+            function scheduleAutoSave() {
+                // Check if auto-save is enabled
+                const autoSaveEnabled = localStorage.getItem('autoSaveEnabled') !== 'false';
+                if (!autoSaveEnabled) return;
+
+                if (autoSaveTimeout) {
+                    clearTimeout(autoSaveTimeout);
+                }
+
+                autoSaveTimeout = setTimeout(() => {
+                    autoSaveEditPage(noteId);
+                }, 2000); // Auto-save after 2 seconds of inactivity
+            }
+
+            function handleContentChange() {
+                scheduleAutoSave();
+                // Update preview if in preview mode
+                if (currentEditMode === 'preview') {
+                    updateMarkdownPreview();
+                }
+            }
+
+            editPageTitle.addEventListener('input', scheduleAutoSave);
+            editPageContent.addEventListener('input', handleContentChange);
+        }
+
+        async function autoSaveEditPage(noteId) {
+            const editPageTitle = document.getElementById('editPageTitle');
+            const editPageContent = document.getElementById('editPageContent');
+            const autoSaveIndicator = document.getElementById('autoSaveIndicator');
+
+            try {
+                autoSaveIndicator.textContent = 'Salvando...';
+                autoSaveIndicator.style.color = '#007bff';
+
+                const response = await fetch(`${API_BASE_URL}/notes/${noteId}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        title: editPageTitle.value.trim(),
+                        content: editPageContent.value.trim()
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Erro ${response.status}: ${response.statusText}`);
+                }
+
+                autoSaveIndicator.textContent = 'Salvo';
+                autoSaveIndicator.style.color = '#28a745';
+
+                // Update local notes array
+                const updatedNote = await response.json();
+                const noteIndex = notes.findIndex(n => n.id === noteId);
+                if (noteIndex !== -1) {
+                    notes[noteIndex] = updatedNote;
+                }
+
+            } catch (error) {
+                console.error('Erro no auto-save:', error);
+                autoSaveIndicator.textContent = 'Erro ao salvar';
+                autoSaveIndicator.style.color = '#dc3545';
+            }
+        }
+
+        async function removeEditPageAttachment(attachmentId) {
+            if (!confirm('Tem certeza que deseja remover este anexo?')) {
+                return;
+            }
+
+            try {
+                await deleteAttachment(attachmentId);
+                showMessage('✅ Anexo removido com sucesso!', 'success');
+
+                // Refresh the note data and update the display
+                await loadNotes();
+                if (editingNoteId) {
+                    const note = notes.find(n => n.id === editingNoteId);
+                    if (note) {
+                        displayEditPageAttachments(note.attachments || []);
+                    }
+                }
+            } catch (error) {
+                showMessage('❌ Erro ao remover anexo', 'error');
+            }
+        }
+
+        function exitEditMode() {
+            // Stop editing
+            if (editingNoteId) {
+                stopEditingNote(editingNoteId);
+            }
+
+            // Clear auto-save
+            if (autoSaveTimeout) {
+                clearTimeout(autoSaveTimeout);
+                autoSaveTimeout = null;
+            }
+
+            // Clear new note flag
+            isCreatingNewNote = false;
+
+            // Return to notes page
+            switchPage('notes');
+        }
+
+        function startNewNote() {
+            // Switch to edit page immediately
+            switchPage('edit');
+
+            // Set up edit page for new note
+            setupNewNotePage();
+        }
+
+        function setupNewNotePage() {
+            const editPageTitle = document.getElementById('editPageTitle');
+            const editPageContent = document.getElementById('editPageContent');
+            const editPageAttachmentsList = document.getElementById('editPageAttachmentsList');
+            const editPageStatus = document.getElementById('editPageStatus');
+            const autoSaveIndicator = document.getElementById('autoSaveIndicator');
+            const markdownToggle = document.querySelector('.markdown-toggle');
+
+            // Clear previous data
+            editPageTitle.value = '';
+            editPageContent.value = '';
+            editingNoteId = null;
+            isCreatingNewNote = true;
+
+            // Update status
+            if (editPageStatus) {
+                editPageStatus.textContent = 'Nova anotação...';
+                editPageStatus.style.color = '#007bff';
+            }
+
+            if (autoSaveIndicator) {
+                autoSaveIndicator.textContent = 'Não salvo';
+                autoSaveIndicator.style.color = '#6c757d';
+            }
+
+            // Show/hide Markdown preview toggle based on user preference
+            const showMarkdownPreview = localStorage.getItem('showMarkdownPreview') !== 'false';
+            if (markdownToggle) {
+                markdownToggle.style.display = showMarkdownPreview ? 'flex' : 'none';
+            }
+
+            // Clear attachments
+            if (editPageAttachmentsList) {
+                editPageAttachmentsList.innerHTML = '<p style="color: var(--notion-text-light); font-style: italic;">Nenhum anexo</p>';
+            }
+
+            // Set up auto-resize for textarea
+            setupAutoResize(editPageContent);
+
+            // Set up auto-save for new note
+            setupNewNoteAutoSave();
+
+            // Focus on title with placeholder behavior
+            editPageTitle.focus();
+            editPageTitle.placeholder = 'Título da sua nova anotação...';
+            editPageContent.placeholder = 'Comece a escrever... (Markdown suportado)\n\n# Título\n**negrito** *itálico*\n- lista\n- [ ] tarefa\n\n```\ncódigo\n```';
+        }
+
+        function setupNewNoteAutoSave() {
+            const editPageTitle = document.getElementById('editPageTitle');
+            const editPageContent = document.getElementById('editPageContent');
+
+            function scheduleAutoSave() {
+                // Check if auto-save is enabled
+                const autoSaveEnabled = localStorage.getItem('autoSaveEnabled') !== 'false';
+                if (!autoSaveEnabled) return;
+
+                // Only auto-save if there's content
+                const title = editPageTitle.value.trim();
+                const content = editPageContent.value.trim();
+
+                if (!title && !content) return;
+
+                if (autoSaveTimeout) {
+                    clearTimeout(autoSaveTimeout);
+                }
+
+                autoSaveTimeout = setTimeout(() => {
+                    autoSaveNewNote();
+                }, 2000); // Auto-save after 2 seconds of inactivity
+            }
+
+            function handleContentChange() {
+                scheduleAutoSave();
+                // Update preview if in preview mode
+                if (currentEditMode === 'preview') {
+                    updateMarkdownPreview();
+                }
+            }
+
+            editPageTitle.addEventListener('input', scheduleAutoSave);
+            editPageContent.addEventListener('input', handleContentChange);
+        }
+
+        async function autoSaveNewNote() {
+            const editPageTitle = document.getElementById('editPageTitle');
+            const editPageContent = document.getElementById('editPageContent');
+            const editPageStatus = document.getElementById('editPageStatus');
+            const autoSaveIndicator = document.getElementById('autoSaveIndicator');
+
+            const title = editPageTitle.value.trim();
+            const content = editPageContent.value.trim();
+
+            // Don't save if both title and content are empty
+            if (!title && !content) return;
+
+            // Use default title if empty
+            const finalTitle = title || 'Nova anotação';
+
+            try {
+                if (autoSaveIndicator) {
+                    autoSaveIndicator.textContent = 'Salvando...';
+                    autoSaveIndicator.style.color = '#007bff';
+                }
+
+                const response = await fetch(`${API_BASE_URL}/notes`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        title: finalTitle,
+                        content: content
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Erro ${response.status}: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+
+                // Switch from new note mode to edit mode
+                isCreatingNewNote = false;
+                editingNoteId = result.id;
+
+                // Update status
+                if (editPageStatus) {
+                    editPageStatus.textContent = `Editando: ${finalTitle}`;
+                    editPageStatus.style.color = 'var(--notion-text)';
+                }
+
+                if (autoSaveIndicator) {
+                    autoSaveIndicator.textContent = 'Salvo automaticamente';
+                    autoSaveIndicator.style.color = '#28a745';
+                }
+
+                // Reload notes list
+                await loadNotes();
+
+                // Set up regular auto-save for the now-existing note
+                setupEditPageAutoSave(result.id);
+
+            } catch (error) {
+                console.error('Erro ao salvar nova anotação:', error);
+
+                if (autoSaveIndicator) {
+                    autoSaveIndicator.textContent = 'Erro ao salvar';
+                    autoSaveIndicator.style.color = '#dc3545';
+                }
+            }
+        }
+
         function escapeHtml(text) {
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
         }
 
-        // Event listener para o formulário
+        function getFileIcon(fileType) {
+            const icons = {
+                'image': '🖼️',
+                'video': '🎥',
+                'audio': '🎵',
+                'document': '📄',
+                'archive': '📦',
+                'unknown': '📎'
+            };
+            return icons[fileType] || icons['unknown'];
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        async function uploadAttachment(noteId, file) {
+            console.log(`🔧 Frontend: Uploading file ${file.name} (${file.size} bytes) to note ${noteId}`);
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                console.log(`🔧 Frontend: Making POST request to ${API_BASE_URL}/notes/${noteId}/attachments`);
+                const response = await fetch(`${API_BASE_URL}/notes/${noteId}/attachments`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                console.log(`🔧 Frontend: Response status: ${response.status}`);
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error(`❌ Frontend: Upload failed: ${response.status} - ${errorText}`);
+                    throw new Error(`Erro ${response.status}: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                console.log(`✅ Frontend: Upload successful:`, result);
+                return result;
+            } catch (error) {
+                console.error('❌ Frontend: Erro ao fazer upload:', error);
+                throw error;
+            }
+        }
+
+        async function deleteAttachment(attachmentId) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/attachments/${attachmentId}`, {
+                    method: 'DELETE'
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Erro ${response.status}: ${response.statusText}`);
+                }
+
+                return await response.json();
+            } catch (error) {
+                console.error('Erro ao deletar anexo:', error);
+                throw error;
+            }
+        }
+
+        function downloadAttachment(attachmentId, filename) {
+            const link = document.createElement('a');
+            link.href = `${API_BASE_URL}/attachments/${attachmentId}/download`;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Event listeners
         noteForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             const title = document.getElementById('title').value.trim();
-            const text = document.getElementById('text').value.trim();
-            
-            if (!title || !text) {
+            const content = document.getElementById('content').value.trim();
+            const attachmentFiles = document.getElementById('attachments').files;
+
+            if (!title || !content) {
                 showMessage('❌ Por favor, preencha todos os campos!', 'error');
                 return;
             }
-            
-            await addNote(title, text);
+
+            await addNote(title, content, Array.from(attachmentFiles));
         });
 
-        // Função para testar conexão com a API
+        // Edit note form submission
+        editNoteForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const editTitle = document.getElementById('editTitle');
+            const editContent = document.getElementById('editContent');
+            const newAttachmentFiles = document.getElementById('editAttachments').files;
+
+            if (!editTitle.value.trim() || !editContent.value.trim()) {
+                showMessage('❌ Por favor, preencha todos os campos!', 'error');
+                return;
+            }
+
+            // Upload new attachments if any
+            if (newAttachmentFiles.length > 0 && editingNoteId) {
+                try {
+                    for (const file of newAttachmentFiles) {
+                        await uploadAttachment(editingNoteId, file);
+                    }
+                    showMessage('✅ Novos anexos adicionados!', 'success');
+                } catch (error) {
+                    showMessage('❌ Erro ao adicionar anexos', 'error');
+                }
+            }
+
+            // Force save and close
+            if (editingNoteId) {
+                await autoSaveNote(editingNoteId);
+                closeEditNoteModal();
+            }
+        });
+
+        // Close modal when clicking outside
+        addNoteModal.addEventListener('click', (e) => {
+            if (e.target === addNoteModal) {
+                closeAddNoteModal();
+            }
+        });
+
+        editNoteModal.addEventListener('click', (e) => {
+            if (e.target === editNoteModal) {
+                closeEditNoteModal();
+            }
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                if (addNoteModal.classList.contains('show')) {
+                    closeAddNoteModal();
+                } else if (editNoteModal.classList.contains('show')) {
+                    closeEditNoteModal();
+                } else if (currentPage === 'edit') {
+                    exitEditMode();
+                }
+            }
+
+            // Ctrl+S to save in edit mode
+            if (e.ctrlKey && e.key === 's' && currentPage === 'edit') {
+                e.preventDefault();
+                if (editingNoteId) {
+                    autoSaveEditPage(editingNoteId);
+                }
+            }
+
+            // Markdown shortcuts in edit mode
+            if (currentPage === 'edit' && currentEditMode === 'edit') {
+                const textarea = document.getElementById('editPageContent');
+                if (textarea && document.activeElement === textarea) {
+                    handleMarkdownShortcuts(e, textarea);
+                }
+            }
+
+            // Ctrl+Shift+P to toggle preview in edit mode
+            if (e.ctrlKey && e.shiftKey && e.key === 'P' && currentPage === 'edit') {
+                e.preventDefault();
+                switchEditMode(currentEditMode === 'edit' ? 'preview' : 'edit');
+            }
+        });
+
+        function handleMarkdownShortcuts(e, textarea) {
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const selectedText = textarea.value.substring(start, end);
+
+            let replacement = null;
+            let newCursorPos = null;
+
+            // Ctrl+B for bold
+            if (e.ctrlKey && e.key === 'b') {
+                e.preventDefault();
+                replacement = selectedText ? `**${selectedText}**` : '**bold text**';
+                newCursorPos = selectedText ? null : start + 2;
+            }
+
+            // Ctrl+I for italic
+            else if (e.ctrlKey && e.key === 'i') {
+                e.preventDefault();
+                replacement = selectedText ? `*${selectedText}*` : '*italic text*';
+                newCursorPos = selectedText ? null : start + 1;
+            }
+
+            // Ctrl+K for link
+            else if (e.ctrlKey && e.key === 'k') {
+                e.preventDefault();
+                replacement = selectedText ? `[${selectedText}](url)` : '[link text](url)';
+                newCursorPos = selectedText ? start + selectedText.length + 3 : start + 1;
+            }
+
+            // Ctrl+Shift+C for inline code
+            else if (e.ctrlKey && e.shiftKey && e.key === 'C') {
+                e.preventDefault();
+                replacement = selectedText ? `\`${selectedText}\`` : '`code`';
+                newCursorPos = selectedText ? null : start + 1;
+            }
+
+            if (replacement !== null) {
+                textarea.value = textarea.value.substring(0, start) + replacement + textarea.value.substring(end);
+
+                if (newCursorPos !== null) {
+                    textarea.setSelectionRange(newCursorPos, newCursorPos);
+                } else {
+                    textarea.setSelectionRange(start + replacement.length, start + replacement.length);
+                }
+
+                // Trigger input event for auto-save and preview update
+                textarea.dispatchEvent(new Event('input'));
+            }
+        }
+
+        // WebSocket functions
+        function generateUserId() {
+            return 'user_' + Math.random().toString(36).substr(2, 9);
+        }
+
+        function connectWebSocket() {
+            if (!userId) {
+                userId = generateUserId();
+            }
+
+            try {
+                websocket = new WebSocket(`${WS_BASE_URL}/ws/${userId}`);
+
+                websocket.onopen = function(event) {
+                    console.log('✅ WebSocket connected');
+                };
+
+                websocket.onmessage = function(event) {
+                    const message = JSON.parse(event.data);
+                    handleWebSocketMessage(message);
+                };
+
+                websocket.onclose = function(event) {
+                    console.log('WebSocket disconnected');
+                    // Attempt to reconnect after 3 seconds
+                    setTimeout(connectWebSocket, 3000);
+                };
+
+                websocket.onerror = function(error) {
+                    console.error('WebSocket error:', error);
+                };
+            } catch (error) {
+                console.error('Failed to connect WebSocket:', error);
+            }
+        }
+
+        function sendWebSocketMessage(message) {
+            if (websocket && websocket.readyState === WebSocket.OPEN) {
+                websocket.send(JSON.stringify(message));
+            }
+        }
+
+        function handleWebSocketMessage(message) {
+            switch (message.type) {
+                case 'subscribed':
+                    console.log(`Subscribed to note ${message.note_id}`);
+                    break;
+
+                case 'editor_status':
+                    handleEditorStatus(message);
+                    break;
+
+                case 'edit_permission':
+                    handleEditPermission(message);
+                    break;
+
+                case 'edit_denied':
+                    handleEditDenied(message);
+                    break;
+
+                case 'note_change':
+                    handleNoteChange(message);
+                    break;
+
+                case 'note_saved':
+                    handleNoteSaved(message);
+                    break;
+
+                case 'note_updated':
+                    handleNoteUpdated(message);
+                    break;
+
+                case 'error':
+                    showMessage(`❌ ${message.message}`, 'error');
+                    break;
+            }
+        }
+
+        // Initialize app
         async function testConnection() {
             try {
                 const response = await fetch(`${API_BASE_URL}/docs`);
@@ -526,31 +3122,653 @@
             }
         }
 
-        async function loadGraph() {
-            const res = await fetch(`${API_BASE_URL}/graph`);
-            if (!res.ok) return console.error("Falha ao carregar grafo");
-            const { nodes, edges } = await res.json();
+        // Edit page file upload handler
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🔧 Frontend: Setting up file upload handlers');
+            const editPageAttachments = document.getElementById('editPageAttachments');
+            if (editPageAttachments) {
+                console.log('✅ Frontend: Found editPageAttachments element');
+                editPageAttachments.addEventListener('change', async (e) => {
+                    const files = e.target.files;
+                    console.log(`🔧 Frontend: File input changed, ${files.length} files selected`);
+                    console.log(`🔧 Frontend: Current editingNoteId: ${editingNoteId}`);
 
-            const container = document.getElementById("graph-container");
-            const data = { nodes: new vis.DataSet(nodes), edges: new vis.DataSet(edges) };
-            const options = {
-                layout: { improvedLayout: true },
-                physics: { stabilization: false },
-                nodes: { shape: "dot", size: 16, font: { size: 14 } },
-                edges: { arrows: { to: { enabled: true, scaleFactor: 0.5 } } }
+                    if (files.length > 0 && editingNoteId) {
+                        try {
+                            for (const file of files) {
+                                console.log(`🔧 Frontend: Processing file: ${file.name}`);
+                                await uploadAttachment(editingNoteId, file);
+                            }
+                            showMessage('✅ Anexos adicionados com sucesso!', 'success');
+
+                            // Refresh attachments display
+                            await loadNotes();
+                            const note = notes.find(n => n.id === editingNoteId);
+                            if (note) {
+                                displayEditPageAttachments(note.attachments || []);
+                            }
+                        } catch (error) {
+                            console.error('❌ Frontend: Error in file upload handler:', error);
+                            showMessage('❌ Erro ao adicionar anexos', 'error');
+                        }
+
+                        // Clear file input
+                        e.target.value = '';
+                    } else {
+                        if (files.length === 0) {
+                            console.log('🔧 Frontend: No files selected');
+                        }
+                        if (!editingNoteId) {
+                            console.log('❌ Frontend: No editingNoteId set');
+                        }
+                    }
+                });
+            } else {
+                console.error('❌ Frontend: editPageAttachments element not found');
+            }
+        });
+
+        // Markdown functions
+
+        function initializeMarkdown() {
+            // Configure marked.js
+            marked.setOptions({
+                highlight: function(code, lang) {
+                    if (lang && hljs.getLanguage(lang)) {
+                        try {
+                            return hljs.highlight(code, { language: lang }).value;
+                        } catch (err) {}
+                    }
+                    return hljs.highlightAuto(code).value;
+                },
+                breaks: true,
+                gfm: true
+            });
+
+            // Custom renderer for task lists
+            const renderer = new marked.Renderer();
+            const originalListItem = renderer.listitem;
+
+            renderer.listitem = function(text) {
+                // Check for task list items
+                if (/^\s*\[[x ]\]\s*/.test(text)) {
+                    const checked = /^\s*\[x\]\s*/.test(text);
+                    const cleanText = text.replace(/^\s*\[[x ]\]\s*/, '');
+                    return `<li class="task-list-item"><input type="checkbox" ${checked ? 'checked' : ''} disabled> ${cleanText}</li>`;
+                }
+                return originalListItem.call(this, text);
             };
-            new vis.Network(container, data, options);
+
+            marked.setOptions({ renderer });
         }
 
-        // Chama no carregamento da página e após adicionar nota/link
-        window.addEventListener("load", loadGraph);
+        function renderMarkdown(content) {
+            if (!content) return '';
+            try {
+                return marked.parse(content);
+            } catch (error) {
+                console.error('Markdown parsing error:', error);
+                return escapeHtml(content);
+            }
+        }
 
+        function renderMarkdownPreview(content) {
+            if (!content) return '';
 
+            // For note cards, show a truncated plain text version
+            const plainText = content
+                .replace(/#{1,6}\s+/g, '') // Remove headers
+                .replace(/\*\*(.*?)\*\*/g, '$1') // Remove bold
+                .replace(/\*(.*?)\*/g, '$1') // Remove italic
+                .replace(/`(.*?)`/g, '$1') // Remove inline code
+                .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // Remove links, keep text
+                .replace(/!\[([^\]]*)\]\([^)]+\)/g, '$1') // Remove images, keep alt text
+                .replace(/>\s+/g, '') // Remove blockquotes
+                .replace(/[-*+]\s+/g, '') // Remove list markers
+                .replace(/\d+\.\s+/g, '') // Remove numbered list markers
+                .trim();
+
+            return escapeHtml(plainText);
+        }
+
+        function switchEditMode(mode) {
+            const editModeBtn = document.getElementById('editModeBtn');
+            const previewModeBtn = document.getElementById('previewModeBtn');
+            const textarea = document.getElementById('editPageContent');
+            const preview = document.getElementById('markdownPreview');
+            const toolbar = document.getElementById('markdownToolbar');
+
+            currentEditMode = mode;
+
+            if (mode === 'edit') {
+                editModeBtn.classList.add('active');
+                previewModeBtn.classList.remove('active');
+                textarea.classList.remove('hidden');
+                preview.classList.remove('active');
+                if (toolbar) toolbar.style.display = 'flex';
+                textarea.focus();
+            } else {
+                editModeBtn.classList.remove('active');
+                previewModeBtn.classList.add('active');
+                textarea.classList.add('hidden');
+                preview.classList.add('active');
+                if (toolbar) toolbar.style.display = 'none';
+                updateMarkdownPreview();
+            }
+        }
+
+        function insertMarkdown(before, after, placeholder) {
+            const textarea = document.getElementById('editPageContent');
+            if (!textarea) return;
+
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const selectedText = textarea.value.substring(start, end);
+
+            const replacement = selectedText || placeholder;
+            const newText = before + replacement + after;
+
+            textarea.value = textarea.value.substring(0, start) + newText + textarea.value.substring(end);
+
+            // Set cursor position
+            if (selectedText) {
+                // If text was selected, place cursor after the inserted markdown
+                textarea.setSelectionRange(start + newText.length, start + newText.length);
+            } else {
+                // If no text was selected, select the placeholder text
+                textarea.setSelectionRange(start + before.length, start + before.length + replacement.length);
+            }
+
+            textarea.focus();
+
+            // Trigger input event for auto-save and preview update
+            textarea.dispatchEvent(new Event('input'));
+        }
+
+        function updateMarkdownPreview() {
+            const textarea = document.getElementById('editPageContent');
+            const preview = document.getElementById('markdownPreview');
+
+            if (preview && textarea) {
+                const markdownContent = renderMarkdown(textarea.value);
+                preview.innerHTML = markdownContent;
+
+                // Highlight code blocks
+                preview.querySelectorAll('pre code').forEach((block) => {
+                    hljs.highlightElement(block);
+                });
+            }
+        }
+
+        // Path finding functions
+        function populateNoteSelects() {
+            const pathDepthSelect = document.getElementById('pathDepth');
+
+            // Set path depth from user preferences
+            if (pathDepthSelect) {
+                const savedDepth = localStorage.getItem('maxPathDepth') || '6';
+                pathDepthSelect.value = savedDepth;
+            }
+
+            // Initialize search functionality
+            initializeNoteSearch();
+        }
+
+        function initializeNoteSearch() {
+            const startSearch = document.getElementById('startNoteSearch');
+            const endSearch = document.getElementById('endNoteSearch');
+
+            if (startSearch) {
+                setupNoteSearch('start');
+            }
+            if (endSearch) {
+                setupNoteSearch('end');
+            }
+        }
+
+        function setupNoteSearch(type) {
+            const searchInput = document.getElementById(`${type}NoteSearch`);
+            const dropdown = document.getElementById(`${type}NoteDropdown`);
+            const hiddenInput = document.getElementById(`${type}NoteId`);
+
+            if (!searchInput || !dropdown || !hiddenInput) return;
+
+            let selectedIndex = -1;
+            let filteredNotes = [];
+
+            // Handle input changes
+            searchInput.addEventListener('input', (e) => {
+                const query = e.target.value.toLowerCase().trim();
+                selectedIndex = -1;
+
+                if (query.length === 0) {
+                    hideDropdown();
+                    clearSelection();
+                    return;
+                }
+
+                // Filter notes based on title and content
+                filteredNotes = notes.filter(note =>
+                    note.title.toLowerCase().includes(query) ||
+                    note.content.toLowerCase().includes(query)
+                );
+
+                showDropdown(filteredNotes);
+            });
+
+            // Handle keyboard navigation
+            searchInput.addEventListener('keydown', (e) => {
+                if (!dropdown.style.display || dropdown.style.display === 'none') return;
+
+                const items = dropdown.querySelectorAll('.search-dropdown-item');
+
+                switch (e.key) {
+                    case 'ArrowDown':
+                        e.preventDefault();
+                        selectedIndex = Math.min(selectedIndex + 1, items.length - 1);
+                        updateSelection();
+                        break;
+                    case 'ArrowUp':
+                        e.preventDefault();
+                        selectedIndex = Math.max(selectedIndex - 1, -1);
+                        updateSelection();
+                        break;
+                    case 'Enter':
+                        e.preventDefault();
+                        if (selectedIndex >= 0 && items[selectedIndex]) {
+                            selectNote(filteredNotes[selectedIndex]);
+                        }
+                        break;
+                    case 'Escape':
+                        hideDropdown();
+                        break;
+                }
+            });
+
+            // Handle focus out
+            searchInput.addEventListener('blur', (e) => {
+                // Delay hiding to allow clicking on dropdown items
+                setTimeout(() => {
+                    if (!dropdown.contains(document.activeElement)) {
+                        hideDropdown();
+                    }
+                }, 150);
+            });
+
+            function showDropdown(notes) {
+                if (notes.length === 0) {
+                    dropdown.innerHTML = '<div class="search-dropdown-empty">Nenhuma anotação encontrada</div>';
+                } else {
+                    const maxResults = 10;
+                    const displayNotes = notes.slice(0, maxResults);
+                    const hasMore = notes.length > maxResults;
+
+                    let html = displayNotes.map((note, index) => `
+                        <div class="search-dropdown-item" data-index="${index}" onclick="selectNoteFromDropdown('${type}', ${index})">
+                            <div class="search-dropdown-item-title">${escapeHtml(note.title)}</div>
+                            <div class="search-dropdown-item-content">${escapeHtml(note.content.substring(0, 100))}${note.content.length > 100 ? '...' : ''}</div>
+                        </div>
+                    `).join('');
+
+                    if (hasMore) {
+                        html += `<div class="search-dropdown-empty">Mostrando ${maxResults} de ${notes.length} resultados. Continue digitando para refinar...</div>`;
+                    }
+
+                    dropdown.innerHTML = html;
+                }
+                dropdown.style.display = 'block';
+            }
+
+            function hideDropdown() {
+                dropdown.style.display = 'none';
+                selectedIndex = -1;
+            }
+
+            function updateSelection() {
+                const items = dropdown.querySelectorAll('.search-dropdown-item');
+                items.forEach((item, index) => {
+                    item.classList.toggle('selected', index === selectedIndex);
+                });
+
+                // Scroll selected item into view
+                if (selectedIndex >= 0 && items[selectedIndex]) {
+                    items[selectedIndex].scrollIntoView({ block: 'nearest' });
+                }
+            }
+
+            function selectNote(note) {
+                searchInput.value = note.title;
+                searchInput.classList.add('has-selection');
+                hiddenInput.value = note.id;
+                hideDropdown();
+            }
+
+            function clearSelection() {
+                searchInput.classList.remove('has-selection');
+                hiddenInput.value = '';
+            }
+
+            // Make selectNote available globally for this type
+            window[`selectNoteFromDropdown_${type}`] = function(index) {
+                if (filteredNotes[index]) {
+                    selectNote(filteredNotes[index]);
+                }
+            };
+        }
+
+        // Global function to handle dropdown clicks
+        function selectNoteFromDropdown(type, index) {
+            window[`selectNoteFromDropdown_${type}`](index);
+        }
+
+        function clearPathSearch() {
+            // Clear start note search
+            const startSearch = document.getElementById('startNoteSearch');
+            const startId = document.getElementById('startNoteId');
+            const startDropdown = document.getElementById('startNoteDropdown');
+
+            if (startSearch) {
+                startSearch.value = '';
+                startSearch.classList.remove('has-selection');
+            }
+            if (startId) startId.value = '';
+            if (startDropdown) startDropdown.style.display = 'none';
+
+            // Clear end note search
+            const endSearch = document.getElementById('endNoteSearch');
+            const endId = document.getElementById('endNoteId');
+            const endDropdown = document.getElementById('endNoteDropdown');
+
+            if (endSearch) {
+                endSearch.value = '';
+                endSearch.classList.remove('has-selection');
+            }
+            if (endId) endId.value = '';
+            if (endDropdown) endDropdown.style.display = 'none';
+
+            // Clear results
+            const pathResults = document.getElementById('pathResults');
+            if (pathResults) {
+                pathResults.classList.remove('show');
+                pathResults.innerHTML = '';
+            }
+
+            showMessage('🗑️ Busca de caminhos limpa', 'success');
+        }
+
+        async function findShortestPath() {
+            const startNoteId = document.getElementById('startNoteId').value;
+            const endNoteId = document.getElementById('endNoteId').value;
+            const maxDepth = document.getElementById('pathDepth').value;
+
+            if (!startNoteId || !endNoteId) {
+                showMessage('❌ Por favor, selecione as anotações de origem e destino', 'error');
+                return;
+            }
+
+            if (startNoteId === endNoteId) {
+                showMessage('❌ As anotações de origem e destino devem ser diferentes', 'error');
+                return;
+            }
+
+            try {
+                showLoading(true);
+                const response = await fetch(`${API_BASE_URL}/notes/${startNoteId}/path-to/${endNoteId}?max_depth=${maxDepth}`);
+
+                if (!response.ok) {
+                    throw new Error(`Erro ${response.status}: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                displayPathResults([result], 'shortest');
+
+            } catch (error) {
+                console.error('Erro ao buscar caminho:', error);
+                showMessage(`❌ Erro ao buscar caminho: ${error.message}`, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function findAllPaths() {
+            const startNoteId = document.getElementById('startNoteId').value;
+            const endNoteId = document.getElementById('endNoteId').value;
+            const maxDepth = Math.min(parseInt(document.getElementById('pathDepth').value), 4); // Limit for performance
+
+            if (!startNoteId || !endNoteId) {
+                showMessage('❌ Por favor, selecione as anotações de origem e destino', 'error');
+                return;
+            }
+
+            if (startNoteId === endNoteId) {
+                showMessage('❌ As anotações de origem e destino devem ser diferentes', 'error');
+                return;
+            }
+
+            try {
+                showLoading(true);
+                const response = await fetch(`${API_BASE_URL}/notes/${startNoteId}/all-paths-to/${endNoteId}?max_depth=${maxDepth}&max_paths=5`);
+
+                if (!response.ok) {
+                    throw new Error(`Erro ${response.status}: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                displayPathResults([result], 'multiple');
+
+            } catch (error) {
+                console.error('Erro ao buscar caminhos:', error);
+                showMessage(`❌ Erro ao buscar caminhos: ${error.message}`, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function displayPathResults(results, type) {
+            const pathResults = document.getElementById('pathResults');
+            if (!pathResults) return;
+
+            pathResults.innerHTML = '';
+            pathResults.classList.add('show');
+
+            if (type === 'shortest') {
+                const result = results[0];
+                if (result.error || !result.path) {
+                    pathResults.innerHTML = `<div class="path-error">${result.error || 'Nenhum caminho encontrado'}</div>`;
+                    return;
+                }
+
+                pathResults.innerHTML = `
+                    <h4>🎯 Caminho Mais Curto Encontrado</h4>
+                    ${renderPathItem(result.path, 0)}
+                `;
+            } else if (type === 'multiple') {
+                const result = results[0];
+                if (result.error || !result.paths || result.paths.length === 0) {
+                    pathResults.innerHTML = `<div class="path-error">${result.error || 'Nenhum caminho encontrado'}</div>`;
+                    return;
+                }
+
+                const pathsHtml = result.paths.map((path, index) => renderPathItem(path, index)).join('');
+                pathResults.innerHTML = `
+                    <h4>🔀 ${result.count} Caminho(s) Encontrado(s)</h4>
+                    ${pathsHtml}
+                `;
+            }
+        }
+
+        function renderPathItem(path, index) {
+            const pathNodesHtml = path.node_ids.map((nodeId, i) => {
+                const note = notes.find(n => n.id === nodeId);
+                const title = note ? note.title : nodeId;
+                const arrow = i < path.node_ids.length - 1 ? '<span class="path-arrow">→</span>' : '';
+                return `<span class="path-node" onclick="selectNote('${nodeId}')" title="${escapeHtml(title)}">${escapeHtml(title)}</span>${arrow}`;
+            }).join('');
+
+            return `
+                <div class="path-result-item">
+                    <div class="path-header">
+                        <strong>Caminho ${index + 1}</strong>
+                        <span class="path-length">${path.length} passo(s)</span>
+                    </div>
+                    <div class="path-nodes">
+                        ${pathNodesHtml}
+                    </div>
+                </div>
+            `;
+        }
+
+        function highlightPathInGraph(nodeIds) {
+            // This function can be used to highlight the path in the graph visualization
+            // Implementation depends on the graph library being used
+            console.log('Highlighting path in graph:', nodeIds);
+        }
+
+        // Settings functions
+        function loadSettings() {
+            // Load settings from localStorage
+            const redirectToEdit = localStorage.getItem('redirectToEditAfterCreate') !== 'false';
+            const autoSaveEnabled = localStorage.getItem('autoSaveEnabled') !== 'false';
+            const showMarkdownPreview = localStorage.getItem('showMarkdownPreview') !== 'false';
+            const showAttachmentCount = localStorage.getItem('showAttachmentCount') !== 'false';
+            const maxPathDepth = localStorage.getItem('maxPathDepth') || '6';
+
+            // Apply settings to UI
+            const redirectCheckbox = document.getElementById('redirectToEditAfterCreate');
+            const autoSaveCheckbox = document.getElementById('autoSaveEnabled');
+            const markdownPreviewCheckbox = document.getElementById('showMarkdownPreview');
+            const attachmentCountCheckbox = document.getElementById('showAttachmentCount');
+            const pathDepthSelect = document.getElementById('maxPathDepth');
+
+            if (redirectCheckbox) redirectCheckbox.checked = redirectToEdit;
+            if (autoSaveCheckbox) autoSaveCheckbox.checked = autoSaveEnabled;
+            if (markdownPreviewCheckbox) markdownPreviewCheckbox.checked = showMarkdownPreview;
+            if (attachmentCountCheckbox) attachmentCountCheckbox.checked = showAttachmentCount;
+            if (pathDepthSelect) pathDepthSelect.value = maxPathDepth;
+        }
+
+        function saveSettings() {
+            // Save settings to localStorage
+            const redirectToEdit = document.getElementById('redirectToEditAfterCreate')?.checked ?? true;
+            const autoSaveEnabled = document.getElementById('autoSaveEnabled')?.checked ?? true;
+            const showMarkdownPreview = document.getElementById('showMarkdownPreview')?.checked ?? true;
+            const showAttachmentCount = document.getElementById('showAttachmentCount')?.checked ?? true;
+            const maxPathDepth = document.getElementById('maxPathDepth')?.value ?? '6';
+
+            localStorage.setItem('redirectToEditAfterCreate', redirectToEdit);
+            localStorage.setItem('autoSaveEnabled', autoSaveEnabled);
+            localStorage.setItem('showMarkdownPreview', showMarkdownPreview);
+            localStorage.setItem('showAttachmentCount', showAttachmentCount);
+            localStorage.setItem('maxPathDepth', maxPathDepth);
+        }
+
+        async function exportNotes() {
+            try {
+                showLoading(true);
+                const response = await fetch(`${API_BASE_URL}/notes`);
+                if (!response.ok) {
+                    throw new Error(`Erro ${response.status}: ${response.statusText}`);
+                }
+
+                const notes = await response.json();
+                const dataStr = JSON.stringify(notes, null, 2);
+                const dataBlob = new Blob([dataStr], {type: 'application/json'});
+
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(dataBlob);
+                link.download = `edu-graph-notes-${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                showMessage('✅ Anotações exportadas com sucesso!', 'success');
+            } catch (error) {
+                console.error('Erro ao exportar anotações:', error);
+                showMessage(`❌ Erro ao exportar anotações: ${error.message}`, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function confirmResetData() {
+            const confirmed = confirm(
+                '⚠️ ATENÇÃO: Esta ação irá deletar TODAS as suas anotações, anexos e conexões.\n\n' +
+                'Esta operação é IRREVERSÍVEL!\n\n' +
+                'Tem certeza que deseja continuar?'
+            );
+
+            if (confirmed) {
+                const doubleConfirm = confirm(
+                    '🚨 ÚLTIMA CONFIRMAÇÃO\n\n' +
+                    'Você está prestes a deletar TODOS os seus dados.\n\n' +
+                    'Digite "DELETAR" no próximo prompt para confirmar.'
+                );
+
+                if (doubleConfirm) {
+                    const userInput = prompt('Digite "DELETAR" para confirmar:');
+                    if (userInput === 'DELETAR') {
+                        resetAllData();
+                    } else {
+                        showMessage('❌ Operação cancelada - texto não confere', 'error');
+                    }
+                }
+            }
+        }
+
+        async function resetAllData() {
+            try {
+                showLoading(true);
+                const response = await fetch(`${API_BASE_URL}/notes`, {
+                    method: 'DELETE'
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Erro ${response.status}: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                showMessage(`✅ Dados removidos: ${result.deleted_mongo} anotações, ${result.deleted_attachments} anexos`, 'success');
+
+                // Reload the notes list
+                await loadNotes();
+
+                // Switch back to notes page
+                switchPage('notes');
+
+            } catch (error) {
+                console.error('Erro ao resetar dados:', error);
+                showMessage(`❌ Erro ao resetar dados: ${error.message}`, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // App initialization
         window.addEventListener('load', () => {
-            testConnection()
-            loadNotes()
-            loadGraph()
-        })
+            initializeMarkdown();
+            testConnection();
+            loadNotes();
+            connectWebSocket();
+            loadSettings();
+        });
+
+        // Save settings when they change
+        document.addEventListener('DOMContentLoaded', () => {
+            const settingsInputs = [
+                'redirectToEditAfterCreate',
+                'autoSaveEnabled',
+                'showMarkdownPreview',
+                'showAttachmentCount',
+                'maxPathDepth'
+            ];
+
+            settingsInputs.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.addEventListener('change', saveSettings);
+                }
+            });
+        });
     </script>
 </body>
 </html>

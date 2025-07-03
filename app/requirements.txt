@@ -4,3 +4,8 @@ neo4j
 sentence-transformers
 pymongo
 numpy
+scikit-learn
+websockets
+python-multipart
+aiofiles
+pillow

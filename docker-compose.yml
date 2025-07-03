@@ -19,6 +19,7 @@ services:
       - neo4j
     volumes:
       - ./app:/app
+      - media_files:/app/media
     working_dir: /app
 
   mongodb:
@@ -31,4 +32,5 @@ services:
 volumes:
   neo4j_data:
   mongo_data:
+  media_files:
   
